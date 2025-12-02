@@ -1,0 +1,238 @@
+/* 用户登录首页样式 */
+/* banner */
+.banner{
+  height: 800px;
+}
+
+.banner .wrapper{
+  position: relative;
+  
+  overflow: hidden;
+  max-width: none;
+  width: 1682px;
+  padding: 0;
+  margin: 0 auto;
+  /* border: 3px solid blue; */
+  
+}
+
+/* 图片 */
+.banner .pic{
+  display: flex;
+
+  width: 4960px;
+  margin: 0;
+  padding:0;
+   margin-left: 442px;
+  transition: transform 0.5s ease-in-out; 
+}
+.banner .pic li {
+  width: 1240px; /* 每张图片固定宽度 */
+  flex-shrink: 0; /* 禁止图片收缩 */
+}
+.banner .pic img {
+  width: 100%; /* 图片自适应容器宽度 */
+  display: block; /* 去除图片底部间隙 */
+  
+  height: auto; /* 高度自动，保持比例 */
+}
+
+/* 侧导航 */
+.subnav{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 442px;
+  height: 800px;
+  background-color: #3f3e3e;
+  
+  z-index: 999;
+}
+
+.subnav li{
+  display: flex;
+  padding-left: 100px;
+  padding-right: 30px;
+ 
+  line-height: 80px;
+  cursor: pointer;
+
+}
+
+.subnav li a{
+color: #fff;
+font-size: 20px;
+}
+.subnav p{
+  padding-left: 100px;
+  padding-right: 10px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+
+
+.subnav li span{
+  margin-left: 200px;
+  color: #fff;
+}
+
+.subnav li:hover{
+  background-color:  rgba(0, 0, 0,0.60);
+}
+
+.subnav p:hover{
+background-color:  rgba(0, 0, 0,0.50);
+}
+
+/* 指示器 */
+.banner ol {
+  display: flex;
+  position: absolute;
+  bottom: 20px;
+  right: 16px;
+  cursor: pointer;
+}
+
+.banner ol li{
+  margin-left: 8px;
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.2);
+  
+  
+}
+
+.banner ol i{
+  display: block;
+  margin: 4px;
+  width: 14px;
+  height: 14px;
+  background-color: rgba(255,255,255,0.5);
+  border-radius: 50px;
+
+}
+
+/* 选中状态 */
+.banner ol li.active i {
+  background-color: #fff;
+}
+
+/* 上新 */
+/* 标题 公共样式 */
+.title{
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 40px;
+  margin-bottom: 30px;
+  height: 42px;
+  
+}
+
+.title .left{
+  display: flex;
+}
+
+.title .left h3{
+  margin-right: 35px;
+  font-size: 30px;
+}
+
+.title .left p{
+  align-self: flex-end;
+  color: #A1A1A1;
+}
+
+.title .right .more{
+  line-height: 42px;
+  color: #A1A1A1;
+}
+
+.title .right .more .iconfont{
+  margin-left: 10px;
+}
+
+/* 上新 公共 */
+.bd ul{
+display: flex;
+gap: 20px;
+justify-content: center;
+}
+
+.bd .wrapper{
+  min-width: 1540px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.bd li{
+  width: 375px;
+  height: 475px;
+  background-color: #ccc;
+}
+
+.bd li .pic{
+  width: 375px;
+  height: 375px;
+}
+
+.bd li .txt{
+  text-align: center;
+}
+
+.bd li h4{
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+/* 搜索框轮换效果 */
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search input {
+  padding-left: 30px;
+  width: 200px;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: 1px solid #ddd;
+  height: 32px;
+  border-radius: 16px;
+}
+
+.search .search-placeholder {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+.search .placeholder-text {
+  display: inline-block;
+  animation: fadeInOut 0.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-5px); }
+  50% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(5px); }
+}
+
+/* 确保搜索框中的 iconfont 正确显示 */
+.search .search-placeholder .iconfont {
+  font-family: "iconfont" !important;
+  font-size: 14px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
