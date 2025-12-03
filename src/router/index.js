@@ -3,7 +3,7 @@ import HomeView from '../views/HomeView.vue'
 // 检查组件是否正确导入
 import RegisterView from '../views/RegisterView.vue'
 import ShopView from '../views/ShopView.vue'
-import moduleName from '../pages/index.vue';
+import NotFound from '../views/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,6 +49,12 @@ const router = createRouter({
       path: '/admin/dashboard',
       name: 'admin-dashboard',
       component: () => import('../pages/index.vue')
+    },
+    // 404页面路由配置
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: NotFound
     }
   ],
 
