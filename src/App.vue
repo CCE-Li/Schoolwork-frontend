@@ -4,7 +4,7 @@ import '@/assets/iconfont/iconfont.css'
 </script>
 
 <template>
-  <div>
+  <div class="h-screen w-screen overflow-hidden">
     <RouterView />
   </div>
 </template>
