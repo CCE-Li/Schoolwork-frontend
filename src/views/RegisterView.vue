@@ -14,7 +14,7 @@
               placeholder="请输入用户名"
             />
           </div>
-
+<!-- 邮箱验证 -->
           <div class="form-group">
             <label for="email">邮箱:</label>
             <input
