@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 // 检查组件是否正确导入
 import RegisterView from '../views/RegisterView.vue'
 import ShopView from '../views/ShopView.vue'
@@ -11,12 +10,6 @@ const router = createRouter({
     {
       path: '/',
       redirect: '/login'
-    },
-    
-    {
-      path: '/home',
-      name: 'home',
-      component: HomeView,
     },
     {
       path: '/about',

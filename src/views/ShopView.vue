@@ -3,202 +3,261 @@
     <!-- 快捷导航 -->
     <div class="shortcut">
       <div class="wrapper">
-        <ul>
-          <li><a href="#">个人中心</a></li>
-          <li><a href="#">我的订单</a></li>
-          <li><a href="#"><span class="iconfont icon-xiaoxi"></span>消息中心</a></li>
-          <li><a href="#">帮助中心</a></li>
-          <li><a href="#">在线客服</a></li>
-          <li><a href="#"><span class="iconfont icon-shezhi"></span>设置</a></li>
-          <li><a href="#"><span class="iconfont icon-phone-01"></span>手机版</a></li>
-        </ul>
+        <el-space :size="0">
+          <el-button text class="nav-btn">
+            <el-icon><User /></el-icon>个人中心
+          </el-button>
+          <el-divider direction="vertical" />
+          <el-button text class="nav-btn">
+            <el-icon><Document /></el-icon>我的订单
+          </el-button>
+          <el-divider direction="vertical" />
+          <el-button text class="nav-btn">
+            <el-icon><Bell /></el-icon>消息中心
+          </el-button>
+          <el-divider direction="vertical" />
+          <el-button text class="nav-btn">
+            <el-icon><QuestionFilled /></el-icon>帮助中心
+          </el-button>
+          <el-divider direction="vertical" />
+          <el-button text class="nav-btn">
+            <el-icon><Service /></el-icon>在线客服
+          </el-button>
+          <el-divider direction="vertical" />
+          <el-button text class="nav-btn">
+            <el-icon><Setting /></el-icon>设置
+          </el-button>
+          <el-divider direction="vertical" />
+          <el-button text class="nav-btn">
+            <el-icon><Iphone /></el-icon>手机版
+          </el-button>
+        </el-space>
       </div>
     </div>
 
     <!-- 头部区域 -->
     <div class="header wrapper">
       <!-- logo -->
-      <div class="logo"><h1><a href="">易购图书</a></h1></div>
+      <div class="logo">
+        <h1><a href="">易购图书</a></h1>
+      </div>
       <!-- 搜索 -->
-      <div class="search">
-        <span class="iconfont icon-sousuo"></span>
-        <input type="text" v-model="searchText" @focus="hideSearchPlaceholder = true" @blur="hideSearchPlaceholder = searchText.length > 0">
-        <div class="search-placeholder" v-show="!hideSearchPlaceholder && !searchText">
-          <span class="placeholder-text" v-html="currentPlaceholder"></span>
-        </div>
+      <div class="search-box">
+        <el-input
+          v-model="searchText"
+          size="large"
+          :placeholder="currentPlaceholder"
+          clearable
+          class="search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+          <template #append>
+            <el-button type="primary">搜索</el-button>
+          </template>
+        </el-input>
       </div>
       <!-- 购物车 -->
       <div class="cart">
-        <a href="#"><span class="iconfont icon-gouwuche"></span>购物车</a>
+        <el-badge :value="0" :max="99" class="cart-badge">
+          <el-button type="danger" plain>
+            <el-icon><ShoppingCart /></el-icon>
+            购物车
+          </el-button>
+        </el-badge>
       </div>
     </div>
 
     <!-- banner区域 -->
-    <div class="banner" @mouseenter="stopAutoPlay" @mouseleave="startAutoPlay">
-      <div class="wrapper">
-        <!-- 图片 -->
-        <ul class="pic" :style="{ transform: `translateX(${-currentIndex * bannerWidth}px)` }">
-          <li v-for="(img, index) in bannerImages" :key="index">
-            <a href="#"><img :src="img" alt=""></a>
-          </li>
-        </ul>
+    <div class="banner-section">
+      <div class="wrapper banner-wrapper">
         <!-- 侧栏导航 -->
-        <div class="subnav">
-          <div class="left">
-            <ul>
-              <template v-for="(nav, index) in navItems" :key="index">
-                <li>
-                  <a href="#">{{ nav.title }}</a>
-                  <span class="iconfont icon-xiangyou"></span>
-                </li>
-                <p>{{ nav.desc }}</p>
-              </template>
-            </ul>
-          </div>
-          <div class="right"></div>
-        </div>
+        <el-menu
+          class="side-menu"
+          background-color="#3f3e3e"
+          text-color="#fff"
+          active-text-color="#ffd04b"
+        >
+          <el-sub-menu v-for="(nav, index) in navItems" :key="index" :index="String(index)">
+            <template #title>
+              <span>{{ nav.title }}</span>
+            </template>
+            <el-menu-item
+              v-for="(item, idx) in nav.desc.split(' ')"
+              :key="idx"
+              :index="`${index}-${idx}`"
+            >
+              {{ item }}
+            </el-menu-item>
+          </el-sub-menu>
+        </el-menu>
 
-        <!-- 指示器 -->
-        <ol>
-          <li v-for="(_, index) in bannerImages" :key="index"
-              :class="{ active: currentIndex === index }"
-              @click="goToSlide(index)">
-            <i></i>
-          </li>
-        </ol>
+        <!-- 轮播图 -->
+        <el-carousel
+          :interval="3000"
+          height="500px"
+          class="banner-carousel"
+          indicator-position="outside"
+        >
+          <el-carousel-item v-for="(img, index) in bannerImages" :key="index">
+            <img :src="img" alt="" class="banner-img" />
+          </el-carousel-item>
+        </el-carousel>
       </div>
     </div>
 
     <!-- 易购上新 -->
-    <div class="new wrapper">
-      <div class="title">
-        <div class="left">
+    <div class="section wrapper">
+      <div class="section-header">
+        <div class="section-title">
           <h3>易购上新</h3>
-          <p>易购精选 品质保障</p>
+          <el-tag type="success" effect="plain">易购精选 品质保障</el-tag>
         </div>
-        <div class="right">
-          <a href="#" class="more">查看全部<span class="iconfont icon-xiangyou"></span></a>
-        </div>
+        <el-button type="primary" link>
+          查看全部 <el-icon><ArrowRight /></el-icon>
+        </el-button>
       </div>
-    </div>
-    <!-- 内容 -->
-    <div class="bd wrapper">
-      <ul>
-        <li v-for="(item, index) in newProducts" :key="index">
-          <a href="#">
-            <div class="pic">
-              <img :src="item.image" alt="">
+      <el-row :gutter="20">
+        <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in newProducts" :key="index">
+          <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card">
+            <div class="product-img">
+              <el-image :src="item.image" fit="cover" class="card-image" />
             </div>
-            <div class="txt">
-              <h4>{{ item.title }}</h4>
-              <p>￥{{ item.price }}</p>
+            <div class="product-info">
+              <el-text class="product-title" truncated>{{ item.title }}</el-text>
+              <el-text type="danger" class="product-price">￥{{ item.price }}</el-text>
+              <el-button type="primary" size="small" class="add-cart-btn">
+                <el-icon><ShoppingCart /></el-icon> 加入购物车
+              </el-button>
             </div>
-          </a>
-        </li>
-      </ul>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 好物推荐 -->
-    <div class="new wrapper">
-      <div class="title">
-        <div class="left">
+    <div class="section wrapper">
+      <div class="section-header">
+        <div class="section-title">
           <h3>好物推荐</h3>
-          <p>中外名著 经典永存</p>
+          <el-tag type="warning" effect="plain">中外名著 经典永存</el-tag>
         </div>
-        <div class="right">
-          <a href="#" class="more">查看全部<span class="iconfont icon-xiangyou"></span></a>
-        </div>
+        <el-button type="primary" link>
+          查看全部 <el-icon><ArrowRight /></el-icon>
+        </el-button>
       </div>
-    </div>
-    <!-- 内容 -->
-    <div class="bd wrapper">
-      <ul>
-        <li v-for="(item, index) in recommendProducts" :key="index">
-          <a href="#">
-            <div class="pic">
-              <img :src="item.image" alt="">
+      <el-row :gutter="20">
+        <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in recommendProducts" :key="index">
+          <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card">
+            <div class="product-img">
+              <el-image :src="item.image" fit="cover" class="card-image" />
             </div>
-            <div class="txt">
-              <h4>{{ item.title }}</h4>
-              <p>￥{{ item.price }}</p>
+            <div class="product-info">
+              <el-text class="product-title" truncated>{{ item.title }}</el-text>
+              <el-text type="danger" class="product-price">￥{{ item.price }}</el-text>
+              <el-button type="primary" size="small" class="add-cart-btn">
+                <el-icon><ShoppingCart /></el-icon> 加入购物车
+              </el-button>
             </div>
-          </a>
-        </li>
-      </ul>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 底部区域 -->
-    <div class="footer">
+    <el-footer class="footer">
       <div class="wrapper">
         <!-- 服务 -->
-        <div class="service">
-          <ul>
-            <li v-for="(service, index) in services" :key="index">
-              <h5 :class="'service-icon-' + (index + 1)"></h5>
-              <p>{{ service }}</p>
-            </li>
-          </ul>
-        </div>
+        <el-row class="service-row" justify="space-around">
+          <el-col :span="6" v-for="(service, index) in serviceItems" :key="index">
+            <div class="service-item">
+              <el-icon :size="40" color="#409EFF">
+                <component :is="service.icon" />
+              </el-icon>
+              <span>{{ service.text }}</span>
+            </div>
+          </el-col>
+        </el-row>
+
+        <el-divider />
+
         <!-- 帮助中心 -->
-        <div class="help">
-          <div class="left">
-            <dl v-for="(help, index) in helpItems" :key="index">
-              <dt>{{ help.title }}</dt>
-              <dd v-for="(item, idx) in help.items" :key="idx">
-                <a v-if="item.link" :href="item.link">{{ item.text }}</a>
-                <template v-else>{{ item.text || item }}</template>
-              </dd>
-            </dl>
-          </div>
-          <div class="right">
-            <ul>
-              <li>
-                <div class="pic"><img src="@/assets/images/wechat.png" alt=""></div>
-                <p>微信公众号</p>
-              </li>
-              <li>
-                <div class="pic"><img src="@/assets/images/app.png" alt=""></div>
-                <p>app下载二维码</p>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <el-row :gutter="40" class="help-section">
+          <el-col :xs="24" :sm="12" :md="4" v-for="(help, index) in helpItems" :key="index">
+            <div class="help-block">
+              <h4>{{ help.title }}</h4>
+              <ul>
+                <li v-for="(item, idx) in help.items" :key="idx">
+                  <el-link v-if="item.link" :href="item.link" type="info">{{ item.text }}</el-link>
+                  <el-text v-else type="info">{{ item.text || item }}</el-text>
+                </li>
+              </ul>
+            </div>
+          </el-col>
+          <el-col :xs="24" :sm="12" :md="4">
+            <div class="qrcode-section">
+              <div class="qrcode-item">
+                <el-image src="@/assets/images/wechat.png" fit="cover" class="qrcode-img" />
+                <el-text type="info">微信公众号</el-text>
+              </div>
+              <div class="qrcode-item">
+                <el-image src="@/assets/images/app.png" fit="cover" class="qrcode-img" />
+                <el-text type="info">App下载</el-text>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+
+        <el-divider />
+
         <!-- 版权 -->
         <div class="copyright">
-          <p>
-            <a href="#">关于我们</a>|
-            <a href="#">配送验收</a>|
-            <a href="#">合作招商</a>|
-            <a href="#">销售中心</a>|
-            <a href="#">友情链接</a>|
-            <a href="#">质量公告</a>
-          </p>
-          <p>CopyRight © 易购图书</p>
+          <el-space :size="10" wrap>
+            <el-link type="info">关于我们</el-link>
+            <el-divider direction="vertical" />
+            <el-link type="info">配送验收</el-link>
+            <el-divider direction="vertical" />
+            <el-link type="info">合作招商</el-link>
+            <el-divider direction="vertical" />
+            <el-link type="info">销售中心</el-link>
+            <el-divider direction="vertical" />
+            <el-link type="info">友情链接</el-link>
+            <el-divider direction="vertical" />
+            <el-link type="info">质量公告</el-link>
+          </el-space>
+          <el-text type="info" class="copyright-text">CopyRight © 易购图书</el-text>
         </div>
       </div>
-    </div>
+    </el-footer>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import {
+  User,
+  Document,
+  Bell,
+  QuestionFilled,
+  Service,
+  Setting,
+  Iphone,
+  Search,
+  ShoppingCart,
+  ArrowRight,
+  PriceTag,
+  Van,
+  Medal,
+  Headset
+} from '@element-plus/icons-vue'
 
 // 搜索相关
 const searchText = ref('')
-const hideSearchPlaceholder = ref(false)
-const placeholderTexts = [
-  '搜一搜',
-  '<span class="iconfont icon-redu"></span> 热销',
-  '猜你喜欢'
-]
+const placeholderTexts = ['搜一搜', '热销书籍', '猜你喜欢']
 const currentPlaceholderIndex = ref(0)
 const currentPlaceholder = ref(placeholderTexts[0])
 let placeholderTimer = null
-
-// 轮播图相关
-const bannerWidth = 990
-const currentIndex = ref(0)
-let autoPlayTimer = null
 
 const bannerImages = ref([
   new URL('@/assets/images/1.png', import.meta.url).href,
@@ -235,7 +294,12 @@ const recommendProducts = ref([
 ])
 
 // 服务数据
-const services = ref(['价格亲民', '物流快捷', '正版保障', '售后无忧'])
+const serviceItems = ref([
+  { icon: PriceTag, text: '价格亲民' },
+  { icon: Van, text: '物流快捷' },
+  { icon: Medal, text: '正版保障' },
+  { icon: Headset, text: '售后无忧' }
+])
 
 // 帮助中心数据
 const helpItems = ref([
@@ -246,28 +310,6 @@ const helpItems = ref([
   { title: '服务热线', items: ['客服电话 400-0000-000', '人工客服 周一至周日8：00-18：00', { text: 'AI客服', link: '#' }] }
 ])
 
-// 轮播图方法
-const goToSlide = (index) => {
-  currentIndex.value = index
-}
-
-const startAutoPlay = () => {
-  autoPlayTimer = setInterval(() => {
-    if (currentIndex.value < bannerImages.value.length - 1) {
-      currentIndex.value++
-    } else {
-      currentIndex.value = 0
-    }
-  }, 3000)
-}
-
-const stopAutoPlay = () => {
-  if (autoPlayTimer) {
-    clearInterval(autoPlayTimer)
-    autoPlayTimer = null
-  }
-}
-
 // 搜索框文字轮换
 const startPlaceholderRotation = () => {
   placeholderTimer = setInterval(() => {
@@ -277,12 +319,10 @@ const startPlaceholderRotation = () => {
 }
 
 onMounted(() => {
-  startAutoPlay()
   startPlaceholderRotation()
 })
 
 onUnmounted(() => {
-  stopAutoPlay()
   if (placeholderTimer) {
     clearInterval(placeholderTimer)
   }
@@ -290,64 +330,70 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 页面容器 */
+.shop-page {
+  margin-left: 140px;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
 /* 版心 */
 .wrapper {
-  margin: 0 auto;
   width: 1240px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
 /* 快捷导航 */
 .shortcut {
-  height: 52px;
+  width: 100%;
   background-color: #333;
+  padding: 8px 0;
 }
 
 .shortcut .wrapper {
   display: flex;
   justify-content: flex-end;
-  height: 52px;
 }
 
-.shortcut ul {
-  display: flex;
-  line-height: 52px;
+.nav-btn {
+  color: #fff !important;
+  font-size: 13px;
 }
 
-.shortcut li a {
-  padding: 0 15px;
-  border-right: 1px solid #999;
-  font-size: 14px;
-  color: #fff;
+.nav-btn:hover {
+  color: #409EFF !important;
 }
 
-.shortcut li:last-child a {
-  border-right: 0;
-}
-
-.shortcut li .iconfont {
-  margin-right: 4px;
-  vertical-align: middle;
+.shortcut :deep(.el-divider--vertical) {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* 头部 */
 .header {
   display: flex;
-  margin-top: 22px;
-  margin-bottom: 22px;
-  height: 69px;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  margin-top: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* logo */
 .logo {
-  margin-right: 100px;
-  width: 200px;
-  height: 69px;
+  flex-shrink: 0;
+  margin-right: 40px;
 }
 
 .logo a {
-  display: flex;
-  width: 230px;
-  height: 69px;
+  display: block;
+  width: 180px;
+  height: 60px;
   background-image: url("@/assets/yigou.png");
   background-size: contain;
   background-repeat: no-repeat;
@@ -355,503 +401,251 @@ onUnmounted(() => {
 }
 
 /* 搜索区域 */
-.search {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-top: 23px;
-  margin-right: 60px;
-  width: 800px;
-  height: 34px;
-  border-bottom: 2px solid #f4f4f4;
-}
-
-.search .iconfont {
-  font-size: 18px;
-  color: #ccc;
-}
-
-.search input {
+.search-box {
   flex: 1;
-  width: 0;
-  padding-left: 10px;
-  border: none;
-  outline: none;
-  background: transparent;
+  max-width: 600px;
+  margin-right: 40px;
 }
 
-.search input::placeholder {
-  font-size: 16px;
-  color: #ccc;
+.search-input {
+  width: 100%;
 }
 
-.search .search-placeholder {
-  position: absolute;
-  left: 30px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  pointer-events: none;
-  z-index: 1;
-  display: flex;
-  align-items: center;
+.search-input :deep(.el-input__wrapper) {
+  border-radius: 20px 0 0 20px;
 }
 
-.search .placeholder-text {
-  display: inline-block;
-  animation: fadeInOut 0.5s ease-in-out;
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(-5px); }
-  50% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 1; transform: translateY(0); }
+.search-input :deep(.el-input-group__append) {
+  border-radius: 0 20px 20px 0;
 }
 
 /* 购物车 */
 .cart {
-  margin-top: 27px;
-}
-
-.cart a {
-  color: #333;
-}
-
-/* banner */
-.banner {
-  height: 500px;
-  background-color: #f5f5f5;
-}
-
-.banner .wrapper {
-  position: relative;
-  overflow: hidden;
-  width: 1240px;
-  height: 500px;
-  padding: 0;
-  margin: 0 auto;
-}
-
-/* 图片 */
-.banner .pic {
-  display: flex;
-  margin: 0;
-  padding: 0;
-  margin-left: 250px;
-  transition: transform 0.5s ease-in-out;
-  list-style: none;
-}
-
-.banner .pic li {
-  width: 990px;
-  height: 500px;
   flex-shrink: 0;
 }
 
-.banner .pic img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
+.cart-badge :deep(.el-badge__content) {
+  top: 8px;
+  right: 15px;
 }
 
-/* 侧导航 */
-.subnav {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 250px;
-  height: 500px;
-  background-color: #3f3e3e;
-  z-index: 999;
-  padding-top: 20px;
-}
-
-.subnav .left ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.subnav li {
-  display: flex;
-  justify-content: space-between;
-  padding-left: 30px;
-  padding-right: 20px;
-  line-height: 36px;
-  cursor: pointer;
-}
-
-.subnav li a {
-  color: #fff;
-  font-size: 16px;
-  text-decoration: none;
-}
-
-.subnav p {
-  padding-left: 30px;
-  padding-right: 10px;
-  color: #999;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 20px;
-  margin-bottom: 5px;
-}
-
-.subnav li span {
-  color: #fff;
-  font-size: 12px;
-}
-
-.subnav li:hover {
-  background-color: rgba(0, 0, 0, 0.60);
-}
-
-.subnav p:hover {
-  background-color: rgba(0, 0, 0, 0.50);
-}
-
-/* 指示器 */
-.banner ol {
-  display: flex;
-  position: absolute;
-  bottom: 20px;
-  right: 16px;
-  cursor: pointer;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.banner ol li {
-  margin-left: 8px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-.banner ol i {
-  display: block;
-  margin: 4px;
-  width: 14px;
-  height: 14px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 50px;
-}
-
-/* 选中状态 */
-.banner ol li.active i {
-  background-color: #fff;
-}
-
-/* 上新标题 */
-.title {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 40px;
-  margin-bottom: 30px;
-  height: 42px;
-}
-
-.title .left {
-  display: flex;
-}
-
-.title .left h3 {
-  margin-right: 35px;
-  font-size: 30px;
-  font-weight: 400;
-}
-
-.title .left p {
-  align-self: flex-end;
-  color: #A1A1A1;
-}
-
-.title .right .more {
-  line-height: 42px;
-  color: #A1A1A1;
-  text-decoration: none;
-}
-
-.title .right .more .iconfont {
-  margin-left: 10px;
-}
-
-/* 商品列表 */
-.bd ul {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.bd li {
-  width: 290px;
-  height: 400px;
+/* banner区域 */
+.banner-section {
+  margin-top: 20px;
   background-color: #f5f5f5;
+}
+
+.banner-wrapper {
+  display: flex;
+  padding: 0 !important;
+  overflow: hidden;
   border-radius: 8px;
+}
+
+.side-menu {
+  width: 220px;
+  height: 500px;
+  flex-shrink: 0;
+  border: none;
+  overflow-y: auto;
+}
+
+.side-menu :deep(.el-sub-menu__title) {
+  font-size: 15px;
+}
+
+.banner-carousel {
+  flex: 1;
+  border-radius: 0 8px 8px 0;
   overflow: hidden;
 }
 
-.bd li a {
-  text-decoration: none;
-  color: #333;
-}
-
-.bd li .pic {
-  width: 290px;
-  height: 290px;
-  overflow: hidden;
-}
-
-.bd li .pic img {
+.banner-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* 商品区块 */
+.section {
+  margin-top: 40px;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.section-title h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0;
+}
+
+/* 商品卡片 */
+.product-card {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.product-img {
+  height: 220px;
+  overflow: hidden;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
   transition: transform 0.3s;
 }
 
-.bd li:hover .pic img {
+.product-card:hover .card-image {
   transform: scale(1.05);
 }
 
-.bd li .txt {
+.product-info {
+  padding: 16px;
   text-align: center;
-  padding: 10px;
 }
 
-.bd li h4 {
-  margin-top: 10px;
-  margin-bottom: 8px;
+.product-title {
+  display: block;
   font-size: 14px;
-  font-weight: 400;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #303133;
+  margin-bottom: 8px;
+  max-width: 100%;
 }
 
-.bd li p {
-  color: #e4393c;
-  font-size: 16px;
+.product-price {
+  display: block;
+  font-size: 18px;
   font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.add-cart-btn {
+  width: 100%;
 }
 
 /* 底部 */
 .footer {
   margin-top: 60px;
-  height: 580px;
-  background-color: #f5f5f5;
+  padding: 40px 0;
+  background-color: #fff;
+  height: auto;
 }
 
-/* 服务 */
-.service {
-  padding: 60px 0;
-  height: 178px;
-  border-bottom: 1px solid #e8e8e8;
+.service-row {
+  padding: 20px 0;
 }
 
-.service ul {
+.service-item {
   display: flex;
-  justify-content: space-evenly;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.service li {
-  display: flex;
-  width: 190px;
-  height: 58px;
-}
-
-.service li h5 {
-  margin-right: 20px;
-  width: 58px;
-  height: 58px;
-  background-image: url("@/assets/images/sprite.png");
-  background-repeat: no-repeat;
-}
-
-.service li h5.service-icon-2 {
-  background-position: 0 -58px;
-}
-
-.service li h5.service-icon-3 {
-  background-position: 0 -116px;
-}
-
-.service li h5.service-icon-4 {
-  background-position: 0 -174px;
-}
-
-.service li p {
-  font-size: 28px;
-  line-height: 58px;
+.service-item span {
+  font-size: 16px;
+  color: #606266;
 }
 
 /* 帮助中心 */
-.help {
-  display: flex;
-  height: 300px;
-  justify-content: space-between;
-  padding-top: 60px;
+.help-section {
+  padding: 20px 0;
 }
 
-.help .left {
-  display: flex;
+.help-block h4 {
+  font-size: 16px;
+  color: #303133;
+  margin-bottom: 16px;
 }
 
-.help .left dl {
-  margin-right: 84px;
-}
-
-.help .left dl:last-child {
-  margin-right: 0;
-}
-
-.help .left dt {
-  margin-bottom: 30px;
-  font-size: 18px;
-}
-
-.help .left dd {
-  margin-bottom: 10px;
-  color: #969696;
-}
-
-.help .left dd a {
-  color: #969696;
-  text-decoration: none;
-}
-
-/* right */
-.help .right ul {
-  display: flex;
+.help-block ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.help .right li:first-child {
-  margin-right: 55px;
-}
-
-.help .right .pic {
-  width: 120px;
-  height: 120px;
+.help-block li {
   margin-bottom: 10px;
 }
 
-.help .right .pic img {
-  width: 100%;
-  height: 100%;
+/* 二维码 */
+.qrcode-section {
+  display: flex;
+  gap: 20px;
 }
 
-.help .right p {
-  text-align: center;
-  color: #969696;
+.qrcode-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.qrcode-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
 }
 
 /* 版权 */
 .copyright {
   text-align: center;
+  padding-top: 20px;
 }
 
-.copyright p {
-  margin-bottom: 10px;
+.copyright-text {
+  display: block;
+  margin-top: 16px;
 }
 
-.copyright p a {
-  margin: 0 10px;
-  color: #969696;
-  text-decoration: none;
-}
-
-/* 响应式布局 */
-@media (max-width: 1280px) {
-  .wrapper {
-    width: 100%;
-    max-width: 1240px;
-    padding: 0 20px;
-  }
-}
-
+/* 响应式 */
 @media (max-width: 1024px) {
   .header {
     flex-wrap: wrap;
-    height: auto;
-    padding: 10px 0;
+    gap: 16px;
   }
 
   .logo {
-    margin-right: 20px;
+    margin-right: 0;
   }
 
-  .search {
-    width: 100%;
+  .search-box {
     order: 3;
-    margin: 10px 0 0 0;
-  }
-
-  .banner {
-    height: auto;
-  }
-
-  .banner .wrapper {
+    max-width: 100%;
+    margin-right: 0;
     width: 100%;
-    height: auto;
   }
 
-  .banner .pic {
-    margin-left: 200px;
+  .side-menu {
+    display: none;
   }
 
-  .banner .pic li {
-    width: calc(100vw - 200px);
-    height: auto;
-  }
-
-  .subnav {
-    width: 200px;
-    height: 100%;
-  }
-
-  .subnav li {
-    padding-left: 20px;
-    line-height: 40px;
-  }
-
-  .subnav li span {
-    font-size: 10px;
-  }
-
-  .subnav p {
-    padding-left: 20px;
-    font-size: 11px;
-  }
-
-  .bd li {
-    width: calc(50% - 10px);
-    height: auto;
-  }
-
-  .bd li .pic {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-  }
-
-  .help .left {
-    flex-wrap: wrap;
-  }
-
-  .help .left dl {
-    margin-right: 40px;
-    margin-bottom: 20px;
+  .banner-carousel {
+    border-radius: 8px;
   }
 }
 
@@ -860,116 +654,32 @@ onUnmounted(() => {
     justify-content: center;
   }
 
-  .shortcut li a {
-    padding: 0 8px;
-    font-size: 12px;
-  }
-
   .header {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
 
   .logo {
-    margin-right: 0;
-    margin-bottom: 10px;
+    text-align: center;
   }
 
   .cart {
-    margin-top: 10px;
+    text-align: center;
   }
 
-  .subnav {
-    display: none;
+  .section {
+    padding: 20px;
   }
 
-  .banner .pic {
-    margin-left: 0;
-  }
-
-  .banner .pic li {
-    width: 100%;
-  }
-
-  .bd ul {
-    flex-wrap: wrap;
-  }
-
-  .bd li {
-    width: calc(50% - 10px);
-  }
-
-  .title .left h3 {
-    font-size: 24px;
-  }
-
-  .service li {
+  .section-header {
     flex-direction: column;
-    align-items: center;
-    width: auto;
+    gap: 12px;
+    align-items: flex-start;
   }
 
-  .service li h5 {
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-
-  .service li p {
-    font-size: 16px;
-  }
-
-  .help {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .help .right {
-    margin-top: 30px;
-  }
-
-  .footer {
-    height: auto;
-    padding-bottom: 30px;
-  }
-}
-
-@media (max-width: 480px) {
-  .shortcut ul {
-    flex-wrap: wrap;
+  .qrcode-section {
     justify-content: center;
-  }
-
-  .shortcut li a {
-    padding: 0 5px;
-    font-size: 11px;
-    border-right: none;
-  }
-
-  .bd li {
-    width: 100%;
-  }
-
-  .title {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .title .right {
-    margin-top: 10px;
-  }
-
-  .service ul {
-    flex-wrap: wrap;
-  }
-
-  .service li {
-    width: 50%;
-    margin-bottom: 20px;
-  }
-
-  .help .left dl {
-    width: 50%;
-    margin-right: 0;
+    margin-top: 20px;
   }
 }
 </style>

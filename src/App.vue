@@ -5,12 +5,19 @@ import '@/assets/iconfont/iconfont.css'
 
 
 <template>
-  <div class="h-screen w-screen overflow-auto">
-    <RouterView />
-  </div>
+  <RouterView />
 </template>
 
+<style>
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-
-<style scoped>
+html, body, #app {
+  width: 100%;
+  min-height: 100vh;
+}
 </style>
