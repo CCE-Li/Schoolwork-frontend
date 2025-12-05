@@ -1,7 +1,9 @@
 <template>
   <div class="shop-page">
-    <!-- 快捷导航 -->
-    <div class="shortcut">
+    <!-- 固定顶部 -->
+    <div class="fixed-header">
+      <!-- 快捷导航 -->
+      <div class="shortcut">
       <div class="wrapper">
         <el-space :size="0">
           <el-button text class="nav-btn">
@@ -28,48 +30,59 @@
             <el-icon><Setting /></el-icon>设置
           </el-button>
           <el-divider direction="vertical" />
-          <el-button text class="nav-btn">
-            <el-icon><Iphone /></el-icon>手机版
-          </el-button>
+          <el-popover placement="bottom" :width="150" trigger="hover">
+            <template #reference>
+              <el-button text class="nav-btn">
+                <el-icon><Iphone /></el-icon>手机版
+              </el-button>
+            </template>
+            <div class="qrcode-popover">
+              <el-image :src="phoneQrcode" fit="cover" style="width: 120px; height: 120px;" />
+              <el-text type="info" size="small">扫码预览手机网页</el-text>
+            </div>
+          </el-popover>
         </el-space>
       </div>
-    </div>
-
-    <!-- 头部区域 -->
-    <div class="header wrapper">
-      <!-- logo -->
-      <div class="logo">
-        <h1><a href="">易购图书</a></h1>
-      </div>
-      <!-- 搜索 -->
-      <div class="search-box">
-        <el-input
-          v-model="searchText"
-          size="large"
-          :placeholder="currentPlaceholder"
-          clearable
-          class="search-input"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-          <template #append>
-            <el-button type="primary">搜索</el-button>
-          </template>
-        </el-input>
-      </div>
-      <!-- 购物车 -->
-      <div class="cart">
-        <el-badge :value="0" :max="99" class="cart-badge">
-          <el-button type="danger" plain>
-            <el-icon><ShoppingCart /></el-icon>
-            购物车
-          </el-button>
-        </el-badge>
       </div>
     </div>
 
-    <!-- banner区域 -->
+    <!-- 内容区域 -->
+    <div class="main-content">
+      <!-- 头部区域 -->
+      <div class="header wrapper">
+        <!-- logo -->
+        <div class="logo">
+          <h1><a href="">易购图书</a></h1>
+        </div>
+        <!-- 搜索 -->
+        <div class="search-box">
+          <el-input
+            v-model="searchText"
+            size="large"
+            :placeholder="currentPlaceholder"
+            clearable
+            class="search-input"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+            <template #append>
+              <el-button type="primary">搜索</el-button>
+            </template>
+          </el-input>
+        </div>
+        <!-- 购物车 -->
+        <div class="cart">
+          <el-badge :value="0" :max="99" class="cart-badge">
+            <el-button type="danger" plain>
+              <el-icon><ShoppingCart /></el-icon>
+              购物车
+            </el-button>
+          </el-badge>
+        </div>
+      </div>
+
+      <!-- banner区域 -->
     <div class="banner-section">
       <div class="wrapper banner-wrapper">
         <!-- 侧栏导航 -->
@@ -183,31 +196,33 @@
         <el-divider />
 
         <!-- 帮助中心 -->
-        <el-row :gutter="40" class="help-section">
-          <el-col :xs="24" :sm="12" :md="4" v-for="(help, index) in helpItems" :key="index">
-            <div class="help-block">
+        <div class="help-section">
+          <div class="help-grid">
+            <div class="help-block" v-for="(help, index) in helpItems" :key="index">
               <h4>{{ help.title }}</h4>
               <ul>
                 <li v-for="(item, idx) in help.items" :key="idx">
-                  <el-link v-if="item.link" :href="item.link" type="info">{{ item.text }}</el-link>
-                  <el-text v-else type="info">{{ item.text || item }}</el-text>
+                  <template v-if="typeof item === 'object' && item.link">
+                    <el-link :href="item.link" type="info">{{ item.text }}</el-link>
+                  </template>
+                  <template v-else>
+                    <el-text type="info">{{ typeof item === 'object' ? item.text : item }}</el-text>
+                  </template>
                 </li>
               </ul>
             </div>
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="4">
             <div class="qrcode-section">
               <div class="qrcode-item">
-                <el-image src="@/assets/images/wechat.png" fit="cover" class="qrcode-img" />
+                <el-image :src="wechatQrcode" fit="cover" class="qrcode-img" />
                 <el-text type="info">微信公众号</el-text>
               </div>
               <div class="qrcode-item">
-                <el-image src="@/assets/images/app.png" fit="cover" class="qrcode-img" />
+                <el-image :src="appQrcode" fit="cover" class="qrcode-img" />
                 <el-text type="info">App下载</el-text>
               </div>
             </div>
-          </el-col>
-        </el-row>
+          </div>
+        </div>
 
         <el-divider />
 
@@ -230,6 +245,7 @@
         </div>
       </div>
     </el-footer>
+    </div>
   </div>
 </template>
 
@@ -265,6 +281,11 @@ const bannerImages = ref([
   new URL('@/assets/images/3.png', import.meta.url).href,
   new URL('@/assets/images/4.png', import.meta.url).href
 ])
+
+// 二维码图片
+const phoneQrcode = new URL('@/assets/images/phone.png', import.meta.url).href
+const wechatQrcode = new URL('@/assets/images/wechat.png', import.meta.url).href
+const appQrcode = new URL('@/assets/images/app.png', import.meta.url).href
 
 // 侧栏导航数据
 const navItems = ref([
@@ -332,55 +353,82 @@ onUnmounted(() => {
 <style scoped>
 /* 页面容器 */
 .shop-page {
-  margin-left: 140px;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-color: #f5f7fa;
+  overflow: hidden;
+}
+
+/* 固定顶部 */
+.fixed-header {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #fff;
+  z-index: 100;
+}
+
+/* 内容区域 */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 30px;
 }
 
 /* 版心 */
 .wrapper {
-  width: 1240px;
-  max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 20px;
+  width: 100%;
   box-sizing: border-box;
 }
 
 /* 快捷导航 */
 .shortcut {
   width: 100%;
-  background-color: #333;
-  padding: 8px 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  padding: 10px 0;
 }
 
 .shortcut .wrapper {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  padding: 0 30px;
 }
 
 .nav-btn {
-  color: #fff !important;
+  color: rgba(255, 255, 255, 0.85) !important;
   font-size: 13px;
+  transition: all 0.3s ease;
+  padding: 6px 12px !important;
+  border-radius: 4px;
 }
 
 .nav-btn:hover {
-  color: #409EFF !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.nav-btn .el-icon {
+  margin-right: 4px;
 }
 
 .shortcut :deep(.el-divider--vertical) {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  height: 14px;
 }
 
 /* 头部 */
 .header {
   display: flex;
   align-items: center;
-  padding: 20px;
+  padding: 20px 40px;
+  margin-top: 20px;
   background-color: #fff;
-  margin-top: 10px;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -433,6 +481,8 @@ onUnmounted(() => {
 .banner-section {
   margin-top: 20px;
   background-color: #f5f5f5;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .banner-wrapper {
@@ -448,6 +498,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   border: none;
   overflow-y: auto;
+  border-radius: 12px 0 0 12px;
 }
 
 .side-menu :deep(.el-sub-menu__title) {
@@ -456,7 +507,7 @@ onUnmounted(() => {
 
 .banner-carousel {
   flex: 1;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 12px 12px 0;
   overflow: hidden;
 }
 
@@ -550,8 +601,9 @@ onUnmounted(() => {
 /* 底部 */
 .footer {
   margin-top: 60px;
-  padding: 40px 0;
+  padding: 40px 30px;
   background-color: #fff;
+  border-radius: 12px 12px 0 0;
   height: auto;
 }
 
@@ -573,11 +625,18 @@ onUnmounted(() => {
 
 /* 帮助中心 */
 .help-section {
-  padding: 20px 0;
+  padding: 30px 0;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 30px;
 }
 
 .help-block h4 {
   font-size: 16px;
+  font-weight: 600;
   color: #303133;
   margin-bottom: 16px;
 }
@@ -589,13 +648,15 @@ onUnmounted(() => {
 }
 
 .help-block li {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
 }
 
 /* 二维码 */
 .qrcode-section {
   display: flex;
-  gap: 20px;
+  gap: 24px;
+  justify-content: flex-end;
 }
 
 .qrcode-item {

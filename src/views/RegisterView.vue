@@ -63,8 +63,8 @@
               />
             </div>
 
-            <button type="submit" class="register-button">
-              注册
+            <button type="submit" class="register-button" :disabled="isLoading">
+              {{ isLoading ? '注册中...' : '注册' }}
             </button>
           </form>
 
@@ -89,9 +89,10 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElMessage } from 'element-plus'
+import axios from 'axios'
 
 const router = useRouter()
 
@@ -102,27 +103,116 @@ const form = reactive({
   confirmPassword: ''
 })
 
-const handleRegister = () => {
-  // 这里应该添加实际的注册逻辑
+const isLoading = ref(false)
+
+// 密码强度验证
+const validatePassword = (password) => {
+  if (password.length < 8) {
+    return '密码长度至少8位'
+  }
+  if (!/[a-z]/.test(password)) {
+    return '密码需要包含小写字母'
+  }
+  if (!/[A-Z]/.test(password)) {
+    return '密码需要包含大写字母'
+  }
+  if (!/[0-9]/.test(password)) {
+    return '密码需要包含数字'
+  }
+  return null
+}
+
+// 邮箱格式验证
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+const handleRegister = async () => {
+  // 表单验证
+  if (!form.username || !form.email || !form.password || !form.confirmPassword) {
+    ElMessage.error('请填写所有必填项')
+    return
+  }
+
+  // 用户名验证
+  if (form.username.length < 3) {
+    ElMessage.error('用户名长度至少3位')
+    return
+  }
+
+  // 邮箱格式验证
+  if (!validateEmail(form.email)) {
+    ElMessage.error('请输入有效的邮箱地址')
+    return
+  }
+
+  // 密码强度验证
+  const passwordError = validatePassword(form.password)
+  if (passwordError) {
+    ElMessage.error(passwordError)
+    return
+  }
+
+  // 确认密码验证
   if (form.password !== form.confirmPassword) {
     ElMessage.error('两次输入的密码不一致')
     return
   }
 
-  // 模拟注册成功
-  console.log('注册信息:', {
-    username: form.username,
-    email: form.email
-  })
+  isLoading.value = true
 
-  ElMessage.success({
-    message: '注册成功！',
-    duration: 2000,
-    onClose: () => {
-      // 注册成功后跳转到登录界面
-      router.push('/login')
+  try {
+    // 调用注册 API
+    const response = await axios.post('/api/auth/regist', {
+      username: form.username,
+      password: form.password,
+      email: form.email
+    })
+
+    // 根据响应码处理结果
+    if (response.data.code === 200) {
+      ElMessage.success({
+        message: '注册成功！即将跳转到登录页面...',
+        duration: 2000,
+        onClose: () => {
+          router.push('/login')
+        }
+      })
+      // 延迟跳转，让用户看到成功提示
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
+    } else {
+      ElMessage.error(response.data.message || '注册失败')
     }
-  })
+  } catch (error) {
+    console.error('注册错误:', error)
+
+    // 根据错误码显示不同提示
+    if (error.response) {
+      const { status, data } = error.response
+      switch (status) {
+        case 400:
+          ElMessage.error('请求参数错误，请检查输入')
+          break
+        case 409:
+          ElMessage.error('用户名已存在，请更换用户名')
+          break
+        case 500:
+          ElMessage.error('服务器内部错误，请稍后重试')
+          break
+        default:
+          ElMessage.error(data?.message || '注册失败，请重试')
+      }
+    } else if (error.request) {
+      ElMessage.error('网络连接失败，请检查网络')
+    } else {
+      ElMessage.error('注册失败，请重试')
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const goToLogin = () => {
@@ -261,10 +351,17 @@ label {
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
-.register-button:hover {
+.register-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #16a34a, #15803d);
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.register-button:disabled {
+  background: linear-gradient(135deg, #86efac, #a7f3d0);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .login-link {
