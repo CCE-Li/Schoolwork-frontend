@@ -179,6 +179,12 @@
   </div>
 </template>
 
+<script>
+export default {
+  name: 'DashboardIndex'
+}
+</script>
+
 <script setup>
 import { useRouter } from 'vue-router'
 import { ElCard, ElDropdown, ElDropdownMenu, ElDropdownItem, ElAvatar, ElMessage, ElBadge, ElButton } from 'element-plus'

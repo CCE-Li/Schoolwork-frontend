@@ -48,8 +48,8 @@
               </el-radio-group>
             </div>
 
-            <button type="submit" class="login-button">
-              登录
+            <button type="submit" class="login-button" :disabled="isLoading">
+              {{ isLoading ? '登录中...' : '登录' }}
             </button>
           </form>
 
@@ -95,6 +95,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElRadioGroup, ElRadioButton, ElDialog, ElButton } from 'element-plus'
+import axios from 'axios'
 
 const router = useRouter()
 
@@ -106,6 +107,7 @@ const loginForm = reactive({
 
 const showNotification = ref(false)
 const notificationMessage = ref('')
+const isLoading = ref(false)
 let notificationTimer = null
 
 // 关闭通知
@@ -114,46 +116,89 @@ const closeNotification = () => {
   clearTimeout(notificationTimer)
 }
 
-const handleLogin = () => {
-  // 模拟登录验证
-  console.log('登录信息:', {
-    username: loginForm.username,
-    password: loginForm.password,
-    userType: loginForm.userType
-  })
+// 显示通知
+const showMessage = (message, autoClose = true) => {
+  notificationMessage.value = message
+  showNotification.value = true
 
-  // 管理员登录逻辑
-  if (loginForm.userType === 'admin') {
-    // 模拟管理员账号密码验证
-    if (loginForm.username === 'admin' && loginForm.password === '123456') {
-      // 管理员登录成功，跳转到后台首页
-      router.push('/admin/dashboard')
-    } else {
-      // 管理员账号密码错误
-      notificationMessage.value = '无权限：账号或密码错误'
-      showNotification.value = true
+  if (autoClose) {
+    // 清除可能存在的定时器
+    if (notificationTimer) {
+      clearTimeout(notificationTimer)
     }
-  } else {
-    // 普通用户登录逻辑
-    // 模拟用户账号密码验证（这里可以是任意非空的用户名和密码）
-    if (loginForm.username && loginForm.password) {
-      // 用户登录成功，跳转到首页
-      router.push('/shop')
-    } else {
-      // 用户账号密码错误
-      notificationMessage.value = '登录失败：请填写正确的用户名和密码'
-      showNotification.value = true
+    // 3秒后自动关闭通知
+    notificationTimer = setTimeout(() => {
+      showNotification.value = false
+    }, 3000)
+  }
+}
 
-      // 清除可能存在的定时器
-      if (notificationTimer) {
-        clearTimeout(notificationTimer)
+// 登录处理
+const handleLogin = async () => {
+  // 表单验证
+  if (!loginForm.username || !loginForm.password) {
+    showMessage('请填写用户名和密码')
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    // 调用登录 API
+    const response = await axios.post('/api/auth/login', {
+      username: loginForm.username,
+      password: loginForm.password
+    })
+
+    // 根据响应码处理结果
+    if (response.data.code === 200) {
+      // 登录成功，保存用户信息到 localStorage
+      const userData = response.data.data
+      localStorage.setItem('user', JSON.stringify(userData))
+      localStorage.setItem('isLoggedIn', 'true')
+
+      // 根据登录类型跳转
+      if (loginForm.userType === 'admin') {
+        // 检查是否为管理员账号
+        if (loginForm.username === 'admin') {
+          router.push('/admin/dashboard')
+        } else {
+          showMessage('无权限：该账号不是管理员')
+        }
+      } else {
+        // 普通用户跳转到商城首页
+        router.push('/shop')
       }
-
-      // 3秒后自动关闭通知
-      notificationTimer = setTimeout(() => {
-        showNotification.value = false
-      }, 3000)
+    } else {
+      // 登录失败
+      showMessage(response.data.message || '登录失败')
     }
+  } catch (error) {
+    console.error('登录错误:', error)
+
+    // 根据错误码显示不同提示
+    if (error.response) {
+      const { status, data } = error.response
+      switch (status) {
+        case 401:
+          showMessage('用户名或密码错误')
+          break
+        case 400:
+          showMessage('请求参数错误')
+          break
+        case 500:
+          showMessage('服务器内部错误，请稍后重试')
+          break
+        default:
+          showMessage(data?.message || '登录失败，请重试')
+      }
+    } else if (error.request) {
+      showMessage('网络连接失败，请检查网络')
+    } else {
+      showMessage('登录失败，请重试')
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -297,10 +342,17 @@ label {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.login-button:hover {
+.login-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.login-button:disabled {
+  background: linear-gradient(135deg, #93c5fd, #a5b4fc);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .register-link {
