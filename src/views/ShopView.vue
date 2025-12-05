@@ -372,9 +372,15 @@ onUnmounted(() => {
 /* 内容区域 */
 .main-content {
   flex: 1;
+  overflow: hidden;
   overflow-y: auto;
-  overflow-x: hidden;
   padding: 0 30px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.main-content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 /* 版心 */
@@ -563,11 +569,13 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s;
+  transition: all 0.3s ease;
+  transform: translateY(0);
 }
 
 .product-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+  transform: translateY(-6px);
 }
 
 .product-img {
@@ -578,6 +586,11 @@ onUnmounted(() => {
 .card-image {
   width: 100%;
   height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .card-image {
+  transform: scale(1.08);
 }
 
 .product-info {
