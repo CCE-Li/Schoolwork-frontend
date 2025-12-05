@@ -511,6 +511,16 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+.banner-carousel :deep(.el-carousel__container) {
+  border-radius: 0 12px 12px 0;
+  overflow: hidden;
+}
+
+.banner-carousel :deep(.el-carousel__item) {
+  border-radius: 0 12px 12px 0;
+  overflow: hidden;
+}
+
 .banner-img {
   width: 100%;
   height: 100%;
@@ -524,6 +534,7 @@ onUnmounted(() => {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .section-header {
@@ -551,12 +562,12 @@ onUnmounted(() => {
   margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s;
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .product-img {
@@ -567,11 +578,6 @@ onUnmounted(() => {
 .card-image {
   width: 100%;
   height: 100%;
-  transition: transform 0.3s;
-}
-
-.product-card:hover .card-image {
-  transform: scale(1.05);
 }
 
 .product-info {
