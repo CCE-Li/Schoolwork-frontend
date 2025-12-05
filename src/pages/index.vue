@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+  <div class="dashboard-page">
     <!-- 顶部导航栏 -->
     <header class="bg-white shadow-lg">
       <div class="flex items-center justify-between px-6 py-4">
@@ -42,7 +42,7 @@
         </div>
       </div>
     </header>
-    
+
     <!-- 主体内容 -->
     <main class="flex-1 overflow-y-auto p-4 md:p-6 w-full">
       <div class="mx-auto w-full">
@@ -64,7 +64,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 数据统计卡片 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <el-card class="shadow hover:shadow-lg transition-all duration-300 rounded-xl border-l-4 border-l-blue-500 cursor-pointer h-full">
@@ -82,7 +82,7 @@
               </div>
             </div>
           </el-card>
-          
+
           <el-card class="shadow hover:shadow-lg transition-all duration-300 rounded-xl border-l-4 border-l-green-500 cursor-pointer h-full">
             <div class="text-center">
               <div class="flex justify-center mb-3">
@@ -98,7 +98,7 @@
               </div>
             </div>
           </el-card>
-          
+
           <el-card class="shadow hover:shadow-lg transition-all duration-300 rounded-xl border-l-4 border-l-yellow-500 cursor-pointer h-full">
             <div class="text-center">
               <div class="flex justify-center mb-3">
@@ -114,7 +114,7 @@
               </div>
             </div>
           </el-card>
-          
+
           <el-card class="shadow hover:shadow-lg transition-all duration-300 rounded-xl border-l-4 border-l-purple-500 cursor-pointer h-full">
             <div class="text-center">
               <div class="flex justify-center mb-3">
@@ -131,7 +131,7 @@
             </div>
           </el-card>
         </div>
-        
+
         <!-- 功能模块 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           <el-card class="shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 h-full" @click="goToUsers">
@@ -143,7 +143,7 @@
               <p class="text-blue-600">管理平台所有用户</p>
             </div>
           </el-card>
-          
+
           <el-card class="shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 h-full" @click="goToProducts">
             <div class="text-center py-8">
               <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4">
@@ -153,7 +153,7 @@
               <p class="text-green-600">管理平台所有商品</p>
             </div>
           </el-card>
-          
+
           <el-card class="shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 h-full" @click="goToOrders">
             <div class="text-center py-8">
               <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4">
@@ -163,7 +163,7 @@
               <p class="text-yellow-600">查看和处理订单</p>
             </div>
           </el-card>
-          
+
           <el-card class="shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 h-full" @click="goToSettings">
             <div class="text-center py-8">
               <div class="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4">
@@ -235,7 +235,40 @@ const goToSettings = () => {
 </script>
 
 <style scoped>
-/* 添加一些额外的样式来增强视觉效果 */
+/* 页面容器 - 全屏 */
+.dashboard-page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* 顶部导航栏 */
+.dashboard-page > header {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* 主体内容区域 */
+.dashboard-page > main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* 内容容器 - 居中且有最大宽度 */
+.dashboard-page > main > div {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 卡片效果 */
 .el-card {
   transition: all 0.3s ease;
 }
@@ -244,33 +277,77 @@ const goToSettings = () => {
   transform: translateY(-5px);
 }
 
-/* 为欢迎区域添加渐变背景 */
-.welcome-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* 超大屏幕适配 (1920px+) */
+@media (min-width: 1920px) {
+  .dashboard-page > main {
+    padding: 2rem 3rem;
+  }
+
+  .dashboard-page > main > div {
+    max-width: 1600px;
+  }
 }
 
-/* 为数据卡片添加悬停效果 */
-.stat-card:hover {
-  border-left-width: 6px;
+/* 大屏幕适配 (1440px - 1919px) */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .dashboard-page > main {
+    padding: 1.5rem 2rem;
+  }
+
+  .dashboard-page > main > div {
+    max-width: 1400px;
+  }
 }
 
-/* 为功能卡片添加更深的阴影效果 */
-.feature-card {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+/* 中等屏幕适配 (1024px - 1439px) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .dashboard-page > main {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .dashboard-page > main > div {
+    max-width: 1200px;
+  }
 }
 
-/* 响应式调整 */
-@media (max-width: 768px) {
+/* 平板适配 (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-page > main {
+    padding: 1rem;
+  }
+
+  .dashboard-page > main > div {
+    max-width: 100%;
+  }
+}
+
+/* 移动端适配 (小于768px) */
+@media (max-width: 767px) {
+  .dashboard-page {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .dashboard-page > main {
+    padding: 1rem;
+    overflow: visible;
+  }
+
   .el-card {
     margin-bottom: 1rem;
   }
-  
-  .welcome-content {
-    text-align: center;
+}
+
+/* 小屏手机适配 (小于480px) */
+@media (max-width: 480px) {
+  .dashboard-page > main {
+    padding: 0.75rem;
   }
-  
-  .welcome-buttons {
-    margin-top: 1rem;
+
+  .dashboard-page > header > div {
+    padding: 0.75rem 1rem;
   }
 }
 </style>
