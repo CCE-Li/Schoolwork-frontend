@@ -1,93 +1,86 @@
 <template>
-  <div class="h-screen w-screen flex flex-col md:flex-row">
+  <div class="register-page">
     <!-- 左侧装饰区域 -->
-    <div class="hidden md:flex md:w-2/5 bg-gradient-to-br from-green-500 to-teal-700">
-      <div class="h-full flex items-center justify-center p-8">
-        <div class="text-white text-center">
-          <h1 class="text-4xl font-bold mb-4">加入我们</h1>
-          <p class="text-xl">成为易购图书商城的一员</p>
-        </div>
+    <div class="left-panel">
+      <div class="content">
+        <h1>加入我们</h1>
+        <p>成为易购图书商城的一员</p>
       </div>
     </div>
-    
+
     <!-- 右侧注册表单 -->
-    <div class="flex-1 flex items-center justify-center p-4 bg-gray-50">
-      <div class="w-full max-w-md">
-        <div class="bg-white rounded-lg shadow-lg p-8">
-          <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">用户注册</h2>
-          
-          <form @submit.prevent="handleRegister">
-            <div class="mb-4">
-              <label for="username" class="block text-gray-700 font-medium mb-2">用户名:</label>
-              <el-input 
-                id="username" 
-                v-model="form.username" 
-                type="text" 
+    <div class="right-panel">
+      <div class="form-wrapper">
+        <div class="register-container">
+          <h2>用户注册</h2>
+
+          <form class="register-form" @submit.prevent="handleRegister">
+            <div class="form-group">
+              <label for="username">用户名:</label>
+              <el-input
+                id="username"
+                v-model="form.username"
+                type="text"
                 placeholder="请输入用户名"
                 size="large"
                 clearable
               />
             </div>
-            
-            <div class="mb-4">
-              <label for="email" class="block text-gray-700 font-medium mb-2">邮箱:</label>
-              <el-input 
-                id="email" 
-                v-model="form.email" 
-                type="email" 
+
+            <div class="form-group">
+              <label for="email">邮箱:</label>
+              <el-input
+                id="email"
+                v-model="form.email"
+                type="email"
                 placeholder="请输入邮箱地址"
                 size="large"
                 clearable
               />
             </div>
-            
-            <div class="mb-4">
-              <label for="password" class="block text-gray-700 font-medium mb-2">密码:</label>
-              <el-input 
-                id="password" 
-                v-model="form.password" 
-                type="password" 
+
+            <div class="form-group">
+              <label for="password">密码:</label>
+              <el-input
+                id="password"
+                v-model="form.password"
+                type="password"
                 placeholder="请输入密码"
                 size="large"
                 show-password
               />
             </div>
-            
-            <div class="mb-6">
-              <label for="confirmPassword" class="block text-gray-700 font-medium mb-2">确认密码:</label>
-              <el-input 
-                id="confirmPassword" 
-                v-model="form.confirmPassword" 
-                type="password" 
+
+            <div class="form-group">
+              <label for="confirmPassword">确认密码:</label>
+              <el-input
+                id="confirmPassword"
+                v-model="form.confirmPassword"
+                type="password"
                 placeholder="请再次输入密码"
                 size="large"
                 show-password
               />
             </div>
-            
-            <el-button 
-              type="primary" 
-              native-type="submit" 
-              class="w-full"
-              size="large"
-            >
+
+            <button type="submit" class="register-button">
               注册
-            </el-button>
+            </button>
           </form>
-          
-          <div class="mt-6 text-center">
-            <span class="text-gray-600">已有账户？</span>
-            <el-button type="text" @click="goToLogin">立即登录</el-button>
+
+          <div class="login-link">
+            <span>已有账户？</span>
+            <a @click="goToLogin">立即登录</a>
           </div>
         </div>
-        
+
         <!-- 底部导航 -->
-        <div class="mt-8 text-center">
-          <img alt="易购图书商城" src="@/assets/yigou.png" class="mx-auto mb-4 w-40" />
-          <nav class="flex justify-center space-x-4 text-sm text-gray-600">
-            <a href="#" class="hover:text-blue-500">帮助</a>
-            <span>|</span>
-            <a href="#" class="hover:text-blue-500">关于我们</a>
+        <div class="logo-text-container">
+          <img alt="易购图书商城" src="@/assets/yigou.png" />
+          <nav class="bottom-nav">
+            <a href="#" class="nav-link">帮助</a>
+            <span class="divider">|</span>
+            <a href="#" class="nav-link">关于我们</a>
           </nav>
         </div>
       </div>
@@ -96,9 +89,9 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElInput, ElButton } from 'element-plus'
+import { ElInput, ElMessage } from 'element-plus'
 
 const router = useRouter()
 
@@ -112,19 +105,24 @@ const form = reactive({
 const handleRegister = () => {
   // 这里应该添加实际的注册逻辑
   if (form.password !== form.confirmPassword) {
-    alert('两次输入的密码不一致')
+    ElMessage.error('两次输入的密码不一致')
     return
   }
-  
+
   // 模拟注册成功
   console.log('注册信息:', {
     username: form.username,
     email: form.email
   })
-  
-  alert('注册成功！')
-  // 注册成功后跳转到登录界面
-  router.push('/login')
+
+  ElMessage.success({
+    message: '注册成功！',
+    duration: 2000,
+    onClose: () => {
+      // 注册成功后跳转到登录界面
+      router.push('/login')
+    }
+  })
 }
 
 const goToLogin = () => {
@@ -135,14 +133,9 @@ const goToLogin = () => {
 <style scoped>
 .register-page {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 1rem;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
   box-sizing: border-box;
 }
 
@@ -181,22 +174,6 @@ label {
   font-weight: bold;
   color: #555;
   font-size: 1rem;
-}
-
-input {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-
-input:focus {
-  outline: none;
-  border-color: #42b983;
-  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
 }
 
 .register-button {
@@ -270,7 +247,66 @@ input:focus {
   color: #999;
 }
 
+/* 左侧装饰区域 */
+.left-panel {
+  display: flex;
+  width: 66.666%;
+  background: linear-gradient(to bottom right, #22c55e, #0d9488);
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.left-panel .content {
+  color: white;
+  text-align: center;
+}
+
+.left-panel h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.left-panel p {
+  font-size: 1.25rem;
+}
+
+/* 右侧表单区域 */
+.right-panel {
+  width: 33.333%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #f9fafb;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* 响应式布局 */
+@media (min-width: 768px) {
+  .left-panel {
+    display: flex;
+  }
+}
+
+/* 全屏适配 */
+@media (min-width: 1024px) {
+  .register-page {
+    height: 100vh;
+    width: 100vw;
+  }
+}
+
 @media (max-width: 768px) {
+  .register-page {
+    flex-direction: column;
+  }
+
   .register-container {
     padding: 1.5rem;
     margin: 1rem 0;
@@ -282,11 +318,6 @@ input:focus {
 
   .form-group {
     margin-bottom: 1rem;
-  }
-
-  input {
-    padding: 0.7rem;
-    font-size: 0.9rem;
   }
 
   .register-button {
@@ -301,6 +332,21 @@ input:focus {
 
   .bottom-nav {
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .register-button {
+    padding: 0.7rem;
+    font-size: 0.85rem;
   }
 }
 </style>

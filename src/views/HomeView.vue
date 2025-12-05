@@ -52,13 +52,13 @@
               <span class="iconfont icon-xiangyou"></span>
             </li>
             <p>小说 文学 艺术 传记</p>
-            
+
             <li>
               <a href="#">人文社科</a>
               <span class="iconfont icon-xiangyou"></span>
             </li>
-            <p>历史 哲学 宗教 心理</p> 
-            
+            <p>历史 哲学 宗教 心理</p>
+
             <li>
               <a href="#">少儿图书</a>
               <span class="iconfont icon-xiangyou"></span>
@@ -69,14 +69,14 @@
               <a href="#">教育考试</a>
               <span class="iconfont icon-xiangyou"></span>
             </li>
-            <p>中小辅导 外语学习</p>  
-          
+            <p>中小辅导 外语学习</p>
+
             <li>
               <a href="#">经济金融</a>
               <span class="iconfont icon-xiangyou"></span>
             </li>
             <p>管理 经济 金融会计</p>
-            
+
             <li>
               <a href="#">生活休闲</a>
               <span class="iconfont icon-xiangyou"></span>
@@ -94,7 +94,7 @@
 
           </div>
         </div>
-         
+
         <!-- 指示器 -->
          <ol>
           <li><i></i></li>
@@ -118,7 +118,7 @@
             <a href="#" class="more">查看全部<span class="iconfont icon-xiangyou"></span></a>
           </div>
          </div>
-         
+
      </div>
      <!-- 内容 -->
      <div class="bd wrapper">
@@ -180,7 +180,7 @@
             <a href="#" class="more">查看全部<span class="iconfont icon-xiangyou"></span></a>
           </div>
          </div>
-         
+
      </div>
      <!-- 内容 -->
      <div class="bd wrapper">
@@ -272,7 +272,7 @@
               <dd><a href="#">AI客服</a></dd>
             </dl>
           </div>
-         
+
          <div class="right">
           <ul>
           <li>
@@ -327,62 +327,7 @@ export default {
 
 /* 设置网页统一的字体大小、行高、字体系列相关属性 */
 body {
-  font: 16px/1.5  "Microsoft Yahei",
-    "Hiragino Sans GB", "Heiti SC", "WenQuanYi Micro Hei", sans-serif;
-  color: #333;
-}
-
-/* 去除列表默认样式 */
-ul,
-ol {
-  list-style: none;
-}
-
-/* 去除默认的倾斜效果 */
-em,
-i {
-  font-style: normal;
-}
-
-/* 去除a标签默认下划线，并设置默认文字颜色 */
-a {
-  text-decoration: none;
-  color: #333;
-}
-
-/* 设置img的垂直对齐方式为居中对齐，去除img默认下间隙 */
-img {
-  width: 100%;
-  height: 100%;
-  vertical-align: middle;
-}
-
-/* 去除input默认样式 */
-input {
-  border: none;
-  outline: none;
-  color: #333;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 400;
-}
-
-/* 去除常见标签默认的 margin 和 padding */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* 设置网页统一的字体大小、行高、字体系列相关属性 */
-body {
-  font: 16px/1.5  "Microsoft Yahei",
+  font: 16px/1.5 "Microsoft Yahei",
     "Hiragino Sans GB", "Heiti SC", "WenQuanYi Micro Hei", sans-serif;
   color: #333;
 }
@@ -475,7 +420,7 @@ h6 {
   margin-top: 22px;
   margin-bottom: 22px;
   height: 69px;
-  
+
 }
 
 /* logo */
@@ -527,7 +472,7 @@ h6 {
 
 /* 底部 */
 .footer{
- 
+
   height: 580px;
   background-color: #f5f5f5;
 }
@@ -652,14 +597,14 @@ display: flex;
 
 .banner .wrapper{
   position: relative;
-  
+
   overflow: hidden;
   max-width: none;
   width: 1682px;
   padding: 0;
   margin: 0 auto;
   /* border: 3px solid blue; */
-  
+
 }
 
 /* 图片 */
@@ -670,7 +615,7 @@ display: flex;
   margin: 0;
   padding:0;
    margin-left: 442px;
-  transition: transform 0.5s ease-in-out; 
+  transition: transform 0.5s ease-in-out;
 }
 .banner .pic li {
   width: 1240px; /* 每张图片固定宽度 */
@@ -679,7 +624,7 @@ display: flex;
 .banner .pic img {
   width: 100%; /* 图片自适应容器宽度 */
   display: block; /* 去除图片底部间隙 */
-  
+
   height: auto; /* 高度自动，保持比例 */
 }
 
@@ -691,7 +636,7 @@ display: flex;
   width: 442px;
   height: 800px;
   background-color: #3f3e3e;
-  
+
   z-index: 999;
 }
 
@@ -699,7 +644,7 @@ display: flex;
   display: flex;
   padding-left: 100px;
   padding-right: 30px;
- 
+
   line-height: 80px;
   cursor: pointer;
 
@@ -747,8 +692,8 @@ background-color:  rgba(0, 0, 0,0.50);
 
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.2);
-  
-  
+
+
 }
 
 .banner ol i{
@@ -775,7 +720,7 @@ background-color:  rgba(0, 0, 0,0.50);
   margin-top: 40px;
   margin-bottom: 30px;
   height: 42px;
-  
+
 }
 
 .title .left{
@@ -881,5 +826,210 @@ justify-content: center;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 响应式布局 */
+@media (max-width: 1280px) {
+  .wrapper {
+    width: 100%;
+    max-width: 1240px;
+    padding: 0 20px;
+  }
+
+  .banner .wrapper {
+    width: 100%;
+    max-width: 1682px;
+  }
+
+  .bd .wrapper {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 0;
+  }
+
+  .logo {
+    margin-right: 20px;
+  }
+
+  .search {
+    width: 100%;
+    order: 3;
+    margin: 10px 0 0 0;
+  }
+
+  .banner {
+    height: auto;
+  }
+
+  .banner .wrapper {
+    width: 100%;
+  }
+
+  .banner .pic {
+    margin-left: 200px;
+  }
+
+  .banner .pic li {
+    width: 100%;
+  }
+
+  .subnav {
+    width: 200px;
+    height: 100%;
+  }
+
+  .subnav li {
+    padding-left: 20px;
+    line-height: 50px;
+  }
+
+  .subnav li span {
+    margin-left: 50px;
+  }
+
+  .subnav p {
+    padding-left: 20px;
+    font-size: 11px;
+  }
+
+  .bd li {
+    width: calc(50% - 10px);
+    height: auto;
+  }
+
+  .bd li .pic {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .help .left {
+    flex-wrap: wrap;
+  }
+
+  .help .left dl {
+    margin-right: 40px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shortcut .wrapper {
+    justify-content: center;
+  }
+
+  .shortcut li a {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .logo {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .cart {
+    margin-top: 10px;
+  }
+
+  .subnav {
+    display: none;
+  }
+
+  .banner .pic {
+    margin-left: 0;
+  }
+
+  .bd ul {
+    flex-wrap: wrap;
+  }
+
+  .bd li {
+    width: calc(50% - 10px);
+  }
+
+  .title .left h3 {
+    font-size: 24px;
+  }
+
+  .service li {
+    flex-direction: column;
+    align-items: center;
+    width: auto;
+  }
+
+  .service li h5 {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .service li p {
+    font-size: 16px;
+  }
+
+  .help {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .help .right {
+    margin-top: 30px;
+  }
+
+  .footer {
+    height: auto;
+    padding-bottom: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shortcut ul {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .shortcut li a {
+    padding: 0 5px;
+    font-size: 11px;
+    border-right: none;
+  }
+
+  .bd li {
+    width: 100%;
+  }
+
+  .title {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .title .right {
+    margin-top: 10px;
+  }
+
+  .service ul {
+    flex-wrap: wrap;
+  }
+
+  .service li {
+    width: 50%;
+    margin-bottom: 20px;
+  }
+
+  .help .left dl {
+    width: 50%;
+    margin-right: 0;
+  }
 }
 </style>

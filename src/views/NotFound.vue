@@ -1,25 +1,18 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full">
-      <div class="text-6xl font-bold text-blue-500 mb-4">404</div>
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">页面未找到</h1>
-      <p class="text-gray-600 mb-6">
+  <div class="not-found-page">
+    <div class="not-found-container">
+      <div class="error-code">404</div>
+      <h1>页面未找到</h1>
+      <p class="error-message">
         抱歉，您访问的页面不存在或已被移除。
       </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <el-button 
-          type="primary" 
-          @click="goHome"
-          size="large"
-        >
+      <div class="button-group">
+        <button class="btn btn-primary" @click="goHome">
           返回首页
-        </el-button>
-        <el-button 
-          @click="goBack"
-          size="large"
-        >
+        </button>
+        <button class="btn btn-secondary" @click="goBack">
           返回上一页
-        </el-button>
+        </button>
       </div>
     </div>
   </div>
@@ -27,7 +20,6 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { ElButton } from 'element-plus'
 
 const router = useRouter()
 
@@ -41,5 +33,105 @@ const goBack = () => {
 </script>
 
 <style scoped>
-/* 可以添加自定义样式 */
+.not-found-page {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  padding: 1rem;
+}
+
+.not-found-container {
+  text-align: center;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+.error-code {
+  font-size: 5rem;
+  font-weight: bold;
+  color: #3b82f6;
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.error-message {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+/* 响应式布局 */
+@media (min-width: 640px) {
+  .button-group {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .not-found-container {
+    padding: 1.5rem;
+  }
+
+  .error-code {
+    font-size: 4rem;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
 </style>
