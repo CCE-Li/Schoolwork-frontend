@@ -290,14 +290,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 版心 */
-.wrapper {
-  margin: 0 auto;
-  width: 1240px;
+/* 页面容器 - 全宽 */
+.shop-page {
+  margin-left: 143px;
+  width: 100%;
+  min-height: 100vh;
 }
 
-/* 快捷导航 */
+/* 版心 - 居中 */
+.wrapper {
+  width: 1240px;
+  max-width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+}
+
+/* 快捷导航 - 全宽背景 */
 .shortcut {
+  width: 100%;
   height: 52px;
   background-color: #333;
 }
@@ -417,8 +428,9 @@ onUnmounted(() => {
   color: #333;
 }
 
-/* banner */
+/* banner - 全宽背景 */
 .banner {
+  width: 100%;
   height: 500px;
   background-color: #f5f5f5;
 }
@@ -640,8 +652,9 @@ onUnmounted(() => {
   font-weight: bold;
 }
 
-/* 底部 */
+/* 底部 - 全宽背景 */
 .footer {
+  width: 100%;
   margin-top: 60px;
   height: 580px;
   background-color: #f5f5f5;
