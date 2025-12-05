@@ -1,80 +1,99 @@
 <template>
-  <el-col :lg="16">
-    <div class="register-page">
-      <div class="register-container">
-        <h2>用户注册</h2>
-        <form @submit.prevent="handleRegister" class="register-form">
-          <div class="form-group">
-            <label for="username">用户名:</label>
-            <input
-              id="username"
-              v-model="form.username"
-              type="text"
-              required
-              placeholder="请输入用户名"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="email">邮箱:</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              placeholder="请输入邮箱地址"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password">密码:</label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              placeholder="请输入密码"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">确认密码:</label>
-            <input
-              id="confirmPassword"
-              v-model="form.confirmPassword"
-              type="password"
-              required
-              placeholder="请再次输入密码"
-            />
-          </div>
-
-          <button type="submit" class="register-button">注册</button>
-        </form>
-
-        <div class="login-link">
-          已有账户？<router-link to="/">返回首页</router-link>
-        </div>
-      </div>
-
-      <!-- Logo和文字区域移到注册框下面 -->
-      <div class="logo-text-container">
-        <img alt="易购图书商城" src="@/assets/yigou.png" width="200" height="60" />
-        <nav class="bottom-nav">
-          <a href="#" class="nav-link">帮助</a>
-          <span class="divider">|</span>
-          <a href="#" class="nav-link">关于我们</a>
-        </nav>
+  <div class="register-page">
+    <!-- 左侧装饰区域 -->
+    <div class="left-panel">
+      <div class="content">
+        <h1>加入我们</h1>
+        <p>成为易购图书商城的一员</p>
       </div>
     </div>
-  </el-col>
+
+    <!-- 右侧注册表单 -->
+    <div class="right-panel">
+      <div class="form-wrapper">
+        <div class="register-container">
+          <h2>用户注册</h2>
+
+          <form class="register-form" @submit.prevent="handleRegister">
+            <div class="form-group">
+              <label for="username">用户名:</label>
+              <el-input
+                id="username"
+                v-model="form.username"
+                type="text"
+                placeholder="请输入用户名"
+                size="large"
+                clearable
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="email">邮箱:</label>
+              <el-input
+                id="email"
+                v-model="form.email"
+                type="email"
+                placeholder="请输入邮箱地址"
+                size="large"
+                clearable
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">密码:</label>
+              <el-input
+                id="password"
+                v-model="form.password"
+                type="password"
+                placeholder="请输入密码"
+                size="large"
+                show-password
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">确认密码:</label>
+              <el-input
+                id="confirmPassword"
+                v-model="form.confirmPassword"
+                type="password"
+                placeholder="请再次输入密码"
+                size="large"
+                show-password
+              />
+            </div>
+
+            <button type="submit" class="register-button">
+              注册
+            </button>
+          </form>
+
+          <div class="login-link">
+            <span>已有账户？</span>
+            <a @click="goToLogin">立即登录</a>
+          </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="logo-text-container">
+          <img alt="易购图书商城" src="@/assets/yigou.png" />
+          <nav class="bottom-nav">
+            <a href="#" class="nav-link">帮助</a>
+            <span class="divider">|</span>
+            <a href="#" class="nav-link">关于我们</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElInput, ElMessage } from 'element-plus'
 
 const router = useRouter()
-
 
 const form = reactive({
   username: '',
@@ -84,9 +103,9 @@ const form = reactive({
 })
 
 const handleRegister = () => {
-
+  // 这里应该添加实际的注册逻辑
   if (form.password !== form.confirmPassword) {
-    alert('两次输入的密码不一致')
+    ElMessage.error('两次输入的密码不一致')
     return
   }
 
@@ -96,23 +115,28 @@ const handleRegister = () => {
     email: form.email
   })
 
-  alert('注册成功！')
-  router.push('/') // 注册成功后跳转到首页
+  ElMessage.success({
+    message: '注册成功！',
+    duration: 2000,
+    onClose: () => {
+      // 注册成功后跳转到登录界面
+      router.push('/login')
+    }
+  })
+}
+
+const goToLogin = () => {
+  router.push('/login')
 }
 </script>
 
 <style scoped>
 .register-page {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* 添加以垂直居中 */
-  min-height: 100vh;
-  padding: 1rem;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  box-sizing: border-box; /* 确保padding不影响宽度 */
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
 }
 
 .register-container {
@@ -122,9 +146,10 @@ const handleRegister = () => {
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   background-color: #fff;
-  margin: 1rem 0; /* 调整外边距 */
+  margin: 1rem 0;
   border: 1px solid #e0e0e0;
   box-sizing: border-box;
+  z-index: 1;
 }
 
 h2 {
@@ -149,22 +174,6 @@ label {
   font-weight: bold;
   color: #555;
   font-size: 1rem;
-}
-
-input {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-
-input:focus {
-  outline: none;
-  border-color: #42b983;
-  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
 }
 
 .register-button {
@@ -195,6 +204,7 @@ input:focus {
   color: #42b983;
   text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .login-link a:hover {
@@ -203,13 +213,13 @@ input:focus {
 
 .logo-text-container {
   text-align: center;
-  margin-top: 2rem; /* 纵向保持30px距离 */
+  margin-top: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 500px; /* 与注册框宽度一致 */
-  margin: 0 auto; /* 水平居中 */
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .logo-text-container img {
@@ -236,8 +246,67 @@ input:focus {
 .divider {
   color: #999;
 }
-/* 响应式设计 */
+
+/* 左侧装饰区域 */
+.left-panel {
+  display: flex;
+  width: 66.666%;
+  background: linear-gradient(to bottom right, #22c55e, #0d9488);
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.left-panel .content {
+  color: white;
+  text-align: center;
+}
+
+.left-panel h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.left-panel p {
+  font-size: 1.25rem;
+}
+
+/* 右侧表单区域 */
+.right-panel {
+  width: 33.333%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #f9fafb;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* 响应式布局 */
+@media (min-width: 768px) {
+  .left-panel {
+    display: flex;
+  }
+}
+
+/* 全屏适配 */
+@media (min-width: 1024px) {
+  .register-page {
+    height: 100vh;
+    width: 100vw;
+  }
+}
+
 @media (max-width: 768px) {
+  .register-page {
+    flex-direction: column;
+  }
+
   .register-container {
     padding: 1.5rem;
     margin: 1rem 0;
@@ -249,11 +318,6 @@ input:focus {
 
   .form-group {
     margin-bottom: 1rem;
-  }
-
-  input {
-    padding: 0.7rem;
-    font-size: 0.9rem;
   }
 
   .register-button {
@@ -268,6 +332,21 @@ input:focus {
 
   .bottom-nav {
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .register-button {
+    padding: 0.7rem;
+    font-size: 0.85rem;
   }
 }
 </style>

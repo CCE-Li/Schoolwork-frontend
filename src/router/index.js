@@ -3,12 +3,18 @@ import HomeView from '../views/HomeView.vue'
 // 检查组件是否正确导入
 import RegisterView from '../views/RegisterView.vue'
 import ShopView from '../views/ShopView.vue'
+import NotFound from '../views/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
+      redirect: '/login'
+    },
+    
+    {
+      path: '/home',
       name: 'home',
       component: HomeView,
     },
@@ -31,6 +37,24 @@ const router = createRouter({
       path: '/shop',
       name: 'shop',
       component: ShopView
+    },
+    // 登录界面路由配置
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue')
+    },
+    // 后台管理界面路由配置
+    {
+      path: '/admin/dashboard',
+      name: 'admin-dashboard',
+      component: () => import('../pages/index.vue')
+    },
+    // 404页面路由配置
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: NotFound
     }
   ],
 
