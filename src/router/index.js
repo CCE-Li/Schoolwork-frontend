@@ -31,6 +31,12 @@ const router = createRouter({
       name: 'shop',
       component: ShopView
     },
+    // 图书列表/搜索页面路由配置
+    {
+      path: '/list',
+      name: 'list',
+      component: () => import('../views/ListView.vue')
+    },
     // 登录界面路由配置
     {
       path: '/login',

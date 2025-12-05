@@ -133,14 +133,14 @@
       </div>
       <el-row :gutter="20">
         <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in newProducts" :key="index">
-          <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card">
+          <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card" @click="openProductDetail(item)">
             <div class="product-img">
               <el-image :src="item.image" fit="cover" class="card-image" />
             </div>
             <div class="product-info">
               <el-text class="product-title" truncated>{{ item.title }}</el-text>
               <el-text type="danger" class="product-price">￥{{ item.price }}</el-text>
-              <el-button type="primary" size="small" class="add-cart-btn">
+              <el-button type="primary" size="small" class="add-cart-btn" @click.stop="addToCartDirect(item)">
                 <el-icon><ShoppingCart /></el-icon> 加入购物车
               </el-button>
             </div>
@@ -162,14 +162,14 @@
       </div>
       <el-row :gutter="20">
         <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in recommendProducts" :key="index">
-          <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card">
+          <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card" @click="openProductDetail(item)">
             <div class="product-img">
               <el-image :src="item.image" fit="cover" class="card-image" />
             </div>
             <div class="product-info">
               <el-text class="product-title" truncated>{{ item.title }}</el-text>
               <el-text type="danger" class="product-price">￥{{ item.price }}</el-text>
-              <el-button type="primary" size="small" class="add-cart-btn">
+              <el-button type="primary" size="small" class="add-cart-btn" @click.stop="addToCartDirect(item)">
                 <el-icon><ShoppingCart /></el-icon> 加入购物车
               </el-button>
             </div>
@@ -246,11 +246,94 @@
       </div>
     </el-footer>
     </div>
+
+    <!-- 商品详情弹窗 -->
+    <el-dialog
+      v-model="productDialogVisible"
+      :title="currentProduct?.title"
+      width="1000px"
+      class="product-dialog"
+      destroy-on-close
+      top="8vh"
+      :lock-scroll="true"
+    >
+      <div class="product-detail" v-if="currentProduct">
+        <!-- 商品信息区 -->
+        <div class="detail-main">
+          <div class="detail-image">
+            <el-image :src="currentProduct.image" fit="cover" class="main-image" />
+          </div>
+          <div class="detail-info">
+            <h2 class="detail-title">{{ currentProduct.title }}</h2>
+            <div class="detail-price">
+              <span class="price-label">售价</span>
+              <span class="price-value">￥{{ currentProduct.price }}</span>
+            </div>
+            <div class="detail-desc">
+              <h4>商品简介</h4>
+              <p>{{ currentProduct.description || '这是一本精彩的图书，内容丰富，值得阅读。本书涵盖了丰富的知识点，适合各个年龄段的读者阅读。' }}</p>
+            </div>
+            <div class="detail-actions">
+              <el-input-number v-model="quantity" :min="1" :max="99" size="large" />
+              <el-button type="danger" size="large" @click="buyNow">
+                <el-icon><ShoppingCart /></el-icon> 立即购买
+              </el-button>
+              <el-button type="primary" size="large" @click="addToCart">
+                <el-icon><ShoppingCart /></el-icon> 加入购物车
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <el-divider />
+
+        <!-- 评论区 -->
+        <div class="comment-section">
+          <h3>商品评价 ({{ comments.length }})</h3>
+
+          <!-- 发表评论 -->
+          <div class="comment-form">
+            <div class="rating-row">
+              <span>评分：</span>
+              <el-rate v-model="newComment.rating" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" />
+            </div>
+            <el-input
+              v-model="newComment.content"
+              type="textarea"
+              :rows="3"
+              placeholder="分享您的读书体验..."
+              maxlength="500"
+              show-word-limit
+            />
+            <el-button type="primary" @click="submitComment" :disabled="!newComment.content">
+              发表评论
+            </el-button>
+          </div>
+
+          <!-- 评论列表 -->
+          <div class="comment-list">
+            <div class="comment-item" v-for="(comment, index) in comments" :key="index">
+              <div class="comment-header">
+                <el-avatar :size="40" icon="User" />
+                <div class="comment-meta">
+                  <span class="comment-user">{{ comment.user }}</span>
+                  <el-rate v-model="comment.rating" disabled size="small" />
+                </div>
+                <span class="comment-time">{{ comment.time }}</span>
+              </div>
+              <p class="comment-content">{{ comment.content }}</p>
+            </div>
+            <el-empty v-if="comments.length === 0" description="暂无评论，快来发表第一条评论吧！" />
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import {
   User,
   Document,
@@ -313,6 +396,60 @@ const recommendProducts = ref([
   { image: new URL('@/assets/images/goods7.png', import.meta.url).href, title: '活着（2021版）', price: '45.00' },
   { image: new URL('@/assets/images/goods8.png', import.meta.url).href, title: '你当像鸟飞往你的山', price: '59.00' }
 ])
+
+// 商品详情弹窗
+const productDialogVisible = ref(false)
+const currentProduct = ref(null)
+const quantity = ref(1)
+
+// 评论数据
+const comments = ref([
+  { user: '读书爱好者', rating: 5, content: '非常好的一本书，内容精彩，值得反复阅读！', time: '2024-12-01' },
+  { user: '文学青年', rating: 4, content: '印刷质量很好，物流也很快，好评！', time: '2024-11-28' }
+])
+
+const newComment = ref({
+  rating: 5,
+  content: ''
+})
+
+// 打开商品详情
+const openProductDetail = (product) => {
+  currentProduct.value = product
+  quantity.value = 1
+  productDialogVisible.value = true
+}
+
+// 立即购买
+const buyNow = () => {
+  ElMessage.success(`已购买 ${quantity.value} 本《${currentProduct.value.title}》`)
+  productDialogVisible.value = false
+}
+
+// 加入购物车
+const addToCart = () => {
+  ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
+}
+
+// 直接加入购物车（不打开弹窗）
+const addToCartDirect = (product) => {
+  ElMessage.success(`已将《${product.title}》加入购物车`)
+}
+
+// 发表评论
+const submitComment = () => {
+  if (!newComment.value.content.trim()) return
+
+  comments.value.unshift({
+    user: '我',
+    rating: newComment.value.rating,
+    content: newComment.value.content,
+    time: new Date().toLocaleDateString()
+  })
+
+  newComment.value = { rating: 5, content: '' }
+  ElMessage.success('评论发表成功！')
+}
 
 // 服务数据
 const serviceItems = ref([
@@ -760,6 +897,176 @@ onUnmounted(() => {
   .qrcode-section {
     justify-content: center;
     margin-top: 20px;
+  }
+}
+
+/* 商品详情弹窗 */
+.product-detail {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.detail-main {
+  display: flex;
+  gap: 30px;
+}
+
+.detail-image {
+  flex-shrink: 0;
+  width: 300px;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f5f7fa;
+}
+
+.main-image {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.detail-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.price-label {
+  font-size: 14px;
+  color: #909399;
+}
+
+.price-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #f56c6c;
+}
+
+.detail-desc h4 {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.detail-desc p {
+  font-size: 14px;
+  color: #909399;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+/* 评论区 */
+.comment-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 20px;
+}
+
+.comment-form {
+  background-color: #f5f7fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.rating-row span {
+  font-size: 14px;
+  color: #606266;
+}
+
+.comment-form .el-button {
+  margin-top: 12px;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comment-item {
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.comment-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comment-user {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #909399;
+}
+
+.comment-content {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 52px;
+}
+
+/* 弹窗响应式 */
+@media (max-width: 768px) {
+  .detail-main {
+    flex-direction: column;
+  }
+
+  .detail-image {
+    width: 100%;
+    height: 250px;
+  }
+
+  .detail-actions {
+    flex-wrap: wrap;
   }
 }
 </style>

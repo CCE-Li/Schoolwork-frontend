@@ -152,9 +152,11 @@ const handleLogin = async () => {
 
     // 根据响应码处理结果
     if (response.data.code === 200) {
-      // 登录成功，保存用户信息到 localStorage
-      const userData = response.data.data
-      localStorage.setItem('user', JSON.stringify(userData))
+      // 登录成功，保存 token 到 localStorage
+      // token 在 message 字段中，格式为 "Bearer xxx"
+      const token = response.data.message
+      localStorage.setItem('token', token)
+      localStorage.setItem('username', loginForm.username)
       localStorage.setItem('isLoggedIn', 'true')
 
       // 根据登录类型跳转
