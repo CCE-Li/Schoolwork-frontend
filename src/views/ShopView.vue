@@ -6,11 +6,27 @@
       <div class="shortcut">
       <div class="wrapper">
         <el-space :size="0">
-          <el-button text class="nav-btn">
-            <el-icon><User /></el-icon>个人中心
-          </el-button>
+          <el-dropdown @command="handleUserCommand">
+            <el-button text class="nav-btn">
+              <el-icon><User /></el-icon>{{ currentUsername }}
+              <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="profile">
+                  <el-icon><User /></el-icon>个人中心
+                </el-dropdown-item>
+                <el-dropdown-item command="switch" divided>
+                  <el-icon><Switch /></el-icon>切换账号
+                </el-dropdown-item>
+                <el-dropdown-item command="logout">
+                  <el-icon><SwitchButton /></el-icon>退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-divider direction="vertical" />
-          <el-button text class="nav-btn">
+          <el-button text class="nav-btn" @click="goToOrders">
             <el-icon><Document /></el-icon>我的订单
           </el-button>
           <el-divider direction="vertical" />
@@ -131,7 +147,7 @@
           查看全部 <el-icon><ArrowRight /></el-icon>
         </el-button>
       </div>
-      <el-row :gutter="20">
+      <el-row :gutter="30">
         <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in newProducts" :key="index">
           <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card" @click="openProductDetail(item)">
             <div class="product-img">
@@ -160,7 +176,7 @@
           查看全部 <el-icon><ArrowRight /></el-icon>
         </el-button>
       </div>
-      <el-row :gutter="20">
+      <el-row :gutter="30">
         <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in recommendProducts" :key="index">
           <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card" @click="openProductDetail(item)">
             <div class="product-img">
@@ -333,7 +349,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { createOrderDirectly } from '@/api/order'
+import { getBookList } from '@/api/book'
 import {
   User,
   Document,
@@ -345,11 +364,46 @@ import {
   Search,
   ShoppingCart,
   ArrowRight,
+  ArrowDown,
   PriceTag,
   Van,
   Medal,
-  Headset
+  Headset,
+  Switch,
+  SwitchButton
 } from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+// 当前用户名
+const currentUsername = ref(localStorage.getItem('username') || '用户')
+
+// 用户菜单处理
+const handleUserCommand = (command) => {
+  switch (command) {
+    case 'profile':
+      ElMessage.info('个人中心功能开发中...')
+      break
+    case 'switch':
+      // 切换账号：清除当前登录信息，跳转到登录页
+      localStorage.removeItem('token')
+      localStorage.removeItem('username')
+      localStorage.removeItem('role')
+      localStorage.removeItem('isLoggedIn')
+      ElMessage.success('请登录其他账号')
+      router.push('/login')
+      break
+    case 'logout':
+      // 退出登录
+      localStorage.removeItem('token')
+      localStorage.removeItem('username')
+      localStorage.removeItem('role')
+      localStorage.removeItem('isLoggedIn')
+      ElMessage.success('退出登录成功')
+      router.push('/login')
+      break
+  }
+}
 
 // 搜索相关
 const searchText = ref('')
@@ -386,7 +440,11 @@ const newProducts = ref([
   { image: new URL('@/assets/images/goods1.png', import.meta.url).href, title: '小幻想家系列丛书(共6册)', price: '61.00' },
   { image: new URL('@/assets/images/goods2.png', import.meta.url).href, title: '"十五五"战略与中国式现代化：新形势、新思路、新举措', price: '69.80' },
   { image: new URL('@/assets/images/goods3.png', import.meta.url).href, title: '台湾百科全书·历史', price: '91.00' },
-  { image: new URL('@/assets/images/goods4.png', import.meta.url).href, title: '薛定谔的猫 : 在不确定的世界做确定的自己', price: '49.80' }
+  { image: new URL('@/assets/images/goods4.png', import.meta.url).href, title: '薛定谔的猫 : 在不确定的世界做确定的自己', price: '49.80' },
+  { image: new URL('@/assets/images/goods5.png', import.meta.url).href, title: '朝花夕拾', price: '39.80' },
+  { image: new URL('@/assets/images/goods6.png', import.meta.url).href, title: '鼠疫', price: '49.80' },
+  { image: new URL('@/assets/images/goods7.png', import.meta.url).href, title: '活着（2021版）', price: '45.00' },
+  { image: new URL('@/assets/images/goods8.png', import.meta.url).href, title: '你当像鸟飞往你的山', price: '59.00' }
 ])
 
 // 推荐商品数据
@@ -394,7 +452,11 @@ const recommendProducts = ref([
   { image: new URL('@/assets/images/goods5.png', import.meta.url).href, title: '朝花夕拾', price: '39.80' },
   { image: new URL('@/assets/images/goods6.png', import.meta.url).href, title: '鼠疫', price: '49.80' },
   { image: new URL('@/assets/images/goods7.png', import.meta.url).href, title: '活着（2021版）', price: '45.00' },
-  { image: new URL('@/assets/images/goods8.png', import.meta.url).href, title: '你当像鸟飞往你的山', price: '59.00' }
+  { image: new URL('@/assets/images/goods8.png', import.meta.url).href, title: '你当像鸟飞往你的山', price: '59.00' },
+  { image: new URL('@/assets/images/goods1.png', import.meta.url).href, title: '小幻想家系列丛书(共6册)', price: '61.00' },
+  { image: new URL('@/assets/images/goods2.png', import.meta.url).href, title: '"十五五"战略与中国式现代化', price: '69.80' },
+  { image: new URL('@/assets/images/goods3.png', import.meta.url).href, title: '台湾百科全书·历史', price: '91.00' },
+  { image: new URL('@/assets/images/goods4.png', import.meta.url).href, title: '薛定谔的猫', price: '49.80' }
 ])
 
 // 商品详情弹窗
@@ -421,9 +483,49 @@ const openProductDetail = (product) => {
 }
 
 // 立即购买
-const buyNow = () => {
-  ElMessage.success(`已购买 ${quantity.value} 本《${currentProduct.value.title}》`)
-  productDialogVisible.value = false
+const buyNow = async () => {
+  // 检查商品是否有bid（真实商品）
+  if (!currentProduct.value.bid) {
+    // 模拟商品，直接跳转到订单页面
+    ElMessage.success('订单创建成功')
+    productDialogVisible.value = false
+    router.push({ path: '/user/orders', query: { newOrder: 'true' } })
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确认购买 ${quantity.value} 本《${currentProduct.value.title}》？`,
+      '确认购买',
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    )
+
+    const res = await createOrderDirectly({
+      bid: currentProduct.value.bid,
+      number: quantity.value,
+      addressId: 1 // 默认地址ID，实际应该让用户选择
+    })
+
+    if (res.data.code === 200) {
+      ElMessage.success('订单创建成功，请尽快付款')
+      productDialogVisible.value = false
+      // 跳转到订单页面，显示待付款订单
+      router.push({ path: '/user/orders', query: { newOrder: 'true' } })
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('创建订单失败:', error)
+    }
+  }
+}
+
+// 跳转到我的订单
+const goToOrders = () => {
+  router.push('/user/orders')
 }
 
 // 加入购物车
@@ -476,8 +578,44 @@ const startPlaceholderRotation = () => {
   }, 3000)
 }
 
+// 加载真实图书数据
+const fetchBooks = async () => {
+  try {
+    const res = await getBookList({})
+    if (res.data.code === 200) {
+      const books = res.data.data || []
+      // 处理图书数据格式
+      const formattedBooks = books.map(book => ({
+        bid: book.bid,
+        image: book.cover_url || new URL('@/assets/images/goods1.png', import.meta.url).href,
+        title: book.title,
+        price: book.price?.toFixed(2) || '0.00',
+        author: book.author,
+        description: book.description,
+        stock: book.stock,
+        status: book.status
+      })).filter(book => book.status === 1) // 只显示上架的图书
+
+      // 分配到新品和推荐
+      if (formattedBooks.length > 0) {
+        const half = Math.ceil(formattedBooks.length / 2)
+        newProducts.value = formattedBooks.slice(0, Math.min(8, half))
+        recommendProducts.value = formattedBooks.slice(half, half + 8)
+
+        // 如果推荐商品不够，用新品填充
+        if (recommendProducts.value.length < 4 && formattedBooks.length >= 4) {
+          recommendProducts.value = formattedBooks.slice(0, 8)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('获取图书列表失败:', error)
+  }
+}
+
 onMounted(() => {
   startPlaceholderRotation()
+  fetchBooks()
 })
 
 onUnmounted(() => {
@@ -511,7 +649,7 @@ onUnmounted(() => {
   flex: 1;
   overflow: hidden;
   overflow-y: auto;
-  padding: 0 30px;
+  padding: 0 120px;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
 }
@@ -538,7 +676,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 0 30px;
+  padding: 0 120px;
 }
 
 .nav-btn {
@@ -716,13 +854,18 @@ onUnmounted(() => {
 }
 
 .product-img {
-  height: 220px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
+  position: relative;
 }
 
 .card-image {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   transition: transform 0.3s ease;
 }
 
@@ -757,7 +900,7 @@ onUnmounted(() => {
 /* 底部 */
 .footer {
   margin-top: 60px;
-  padding: 40px 30px;
+  padding: 40px 120px;
   background-color: #fff;
   border-radius: 12px 12px 0 0;
   height: auto;

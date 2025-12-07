@@ -13,6 +13,7 @@ request.interceptors.request.use(
   (config) => {
     // 从 localStorage 获取 token（已包含 "Bearer " 前缀）
     const token = localStorage.getItem('token')
+    console.log('请求URL:', config.url, '| Token:', token) // 调试
     if (token) {
       config.headers['Authorization'] = token
     }
@@ -35,6 +36,7 @@ request.interceptors.response.use(
       if (res.code === 401) {
         localStorage.removeItem('token')
         localStorage.removeItem('username')
+        localStorage.removeItem('role')
         localStorage.removeItem('isLoggedIn')
         router.push('/login')
       }
@@ -52,6 +54,7 @@ request.interceptors.response.use(
           ElMessage.error('登录已过期，请重新登录')
           localStorage.removeItem('token')
           localStorage.removeItem('username')
+          localStorage.removeItem('role')
           localStorage.removeItem('isLoggedIn')
           router.push('/login')
           break

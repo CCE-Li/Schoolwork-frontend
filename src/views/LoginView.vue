@@ -151,24 +151,32 @@ const handleLogin = async () => {
     })
 
     // 根据响应码处理结果
+    console.log('登录响应:', response.data) // 调试：查看完整响应
     if (response.data.code === 200) {
       // 登录成功，保存 token 到 localStorage
-      // token 在 message 字段中，格式为 "Bearer xxx"
-      const token = response.data.message
+      // token 可能在 message 或 data.token 字段中
+      const token = response.data.message || response.data.data?.token
+      console.log('保存的Token:', token) // 调试：查看token
       localStorage.setItem('token', token)
       localStorage.setItem('username', loginForm.username)
       localStorage.setItem('isLoggedIn', 'true')
 
-      // 根据登录类型跳转
+      // 根据登录类型跳转并保存角色
       if (loginForm.userType === 'admin') {
         // 检查是否为管理员账号
         if (loginForm.username === 'admin') {
+          localStorage.setItem('role', 'admin')
           router.push('/admin/dashboard')
         } else {
           showMessage('无权限：该账号不是管理员')
+          // 清除已保存的信息
+          localStorage.removeItem('token')
+          localStorage.removeItem('username')
+          localStorage.removeItem('isLoggedIn')
         }
       } else {
         // 普通用户跳转到商城首页
+        localStorage.setItem('role', 'user')
         router.push('/shop')
       }
     } else {

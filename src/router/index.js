@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { ElMessage } from 'element-plus'
 // 检查组件是否正确导入
 import RegisterView from '../views/RegisterView.vue'
 import ShopView from '../views/ShopView.vue'
@@ -29,13 +30,15 @@ const router = createRouter({
     {
       path: '/shop',
       name: 'shop',
-      component: ShopView
+      component: ShopView,
+      meta: { requiresAuth: true }
     },
     // 图书列表/搜索页面路由配置
     {
       path: '/list',
       name: 'list',
-      component: () => import('../views/ListView.vue')
+      component: () => import('../views/ListView.vue'),
+      meta: { requiresAuth: true }
     },
     // 登录界面路由配置
     {
@@ -47,7 +50,43 @@ const router = createRouter({
     {
       path: '/admin/dashboard',
       name: 'admin-dashboard',
-      component: () => import('../pages/index.vue')
+      component: () => import('../views/dashboard/AdminView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // 用户管理页面
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('../views/dashboard/UserManage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // 图书管理页面
+    {
+      path: '/admin/books',
+      name: 'admin-books',
+      component: () => import('../views/dashboard/BookManage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // 订单管理页面
+    {
+      path: '/admin/orders',
+      name: 'admin-orders',
+      component: () => import('../views/dashboard/OrderManage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // 系统设置页面
+    {
+      path: '/admin/settings',
+      name: 'admin-settings',
+      component: () => import('../views/dashboard/SystemSettings.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // 用户订单页面
+    {
+      path: '/user/orders',
+      name: 'user-orders',
+      component: () => import('../views/UserOrderView.vue'),
+      meta: { requiresAuth: true }
     },
     // 404页面路由配置
     {
@@ -56,7 +95,42 @@ const router = createRouter({
       component: NotFound
     }
   ],
+})
 
+// 路由守卫 - 鉴权
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const role = localStorage.getItem('role')
+
+  // 需要登录的页面
+  if (to.meta.requiresAuth) {
+    if (!token) {
+      ElMessage.warning('请先登录')
+      next('/login')
+      return
+    }
+  }
+
+  // 需要管理员权限的页面
+  if (to.meta.requiresAdmin) {
+    if (role !== 'admin') {
+      ElMessage.error('没有管理员权限')
+      next('/shop')
+      return
+    }
+  }
+
+  // 已登录用户访问登录页，重定向
+  if (to.path === '/login' && token) {
+    if (role === 'admin') {
+      next('/admin/dashboard')
+    } else {
+      next('/shop')
+    }
+    return
+  }
+
+  next()
 })
 
 export default router

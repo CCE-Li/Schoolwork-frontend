@@ -244,12 +244,19 @@ const fetchBooks = async () => {
     if (searchParams.tags.length > 0) params.tags = searchParams.tags.join(',')
 
     const response = await request.get('/books', { params })
-    if (response.data.code === 200) {
-      books.value = response.data.data || []
-      handleSort()
+    const res = response.data
+    // 兼容两种返回格式：直接数组 或 { code, data } 结构
+    if (Array.isArray(res)) {
+      books.value = res
+    } else if (res.code === 200) {
+      books.value = res.data || []
+    } else if (res.data && Array.isArray(res.data)) {
+      books.value = res.data
     } else {
-      ElMessage.error(response.data.message || '获取图书列表失败')
+      ElMessage.error(res.message || '获取图书列表失败')
+      books.value = []
     }
+    handleSort()
   } catch (error) {
     console.error('获取图书列表失败:', error)
     ElMessage.error('获取图书列表失败，请稍后重试')
