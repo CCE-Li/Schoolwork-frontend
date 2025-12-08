@@ -364,12 +364,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-<<<<<<< HEAD
-=======
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createOrderDirectly } from '@/api/order'
 import { getBookList, getBookDetail, addBookComment } from '@/api/book'
->>>>>>> d907aff5abb734241f0d55f2997efccebe44aa25
 import {
   User,
   Document,
@@ -424,7 +421,6 @@ const handleUserCommand = (command) => {
 }
 
 // 搜索相关
-const router = useRouter()
 const searchText = ref('')
 
 // 执行搜索
