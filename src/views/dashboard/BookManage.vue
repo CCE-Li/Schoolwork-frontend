@@ -21,7 +21,7 @@
     </header>
 
     <!-- 主体内容 -->
-    <main class="flex-1 overflow-y-auto p-6">
+    <main ref="mainRef" class="flex-1 overflow-y-auto p-6">
       <div class="max-w-7xl mx-auto">
         <!-- 搜索栏 -->
         <div class="bg-white rounded-xl shadow-md p-4 mb-6">
@@ -79,10 +79,10 @@
             <el-table-column type="selection" width="55" />
             <el-table-column prop="id" label="ID" width="80" />
             <el-table-column prop="bid" label="图书编号" width="120" />
-            <el-table-column prop="cover_url" label="封面" width="100">
+            <el-table-column prop="coverUrl" label="封面" width="100">
               <template #default="{ row }">
                 <el-image
-                  :src="row.cover_url"
+                  :src="row.coverUrl || row.cover_url"
                   style="width: 60px; height: 80px"
                   fit="cover"
                 >
@@ -140,7 +140,7 @@
             <el-pagination
               v-model:current-page="pagination.pageNum"
               v-model:page-size="pagination.pageSize"
-              :page-sizes="[10, 20, 50, 100]"
+              :page-sizes="[20, 50, 100]"
               :total="pagination.total"
               layout="total, sizes, prev, pager, next, jumper"
               @size-change="handleSizeChange"
@@ -203,6 +203,8 @@
         <el-button type="primary" @click="submitPrice">确定</el-button>
       </template>
     </el-dialog>
+    <!-- 回到顶部按钮 -->
+    <el-backtop target=".manage-page > main" :right="40" :bottom="40" :visibility-height="100" />
   </div>
 </template>
 
@@ -225,6 +227,7 @@ const currentBook = ref(null)
 const newPrice = ref(0)
 const selectedBooks = ref([]) // 选中的图书
 const tableRef = ref(null) // 表格引用
+const mainRef = ref(null) // 主内容区域引用
 
 // 表单
 const bookForm = ref({
@@ -239,7 +242,7 @@ const bookForm = ref({
 // 分页
 const pagination = ref({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: 0
 })
 
@@ -254,17 +257,60 @@ const fetchBookList = async () => {
     })
     if (res.data.code === 200) {
       const data = res.data.data
-      // 兼容两种数据格式：数组或分页对象
+      // 兼容多种数据格式
       if (Array.isArray(data)) {
-        bookList.value = data
-        pagination.value.total = data.length
-      } else {
-        bookList.value = data.list || data.records || []
+        // 直接返回数组，前端分页
+        const start = (pagination.value.pageNum - 1) * pagination.value.pageSize
+        const end = start + pagination.value.pageSize
+        // 如果有搜索关键词，先过滤
+        let filtered = data
+        if (searchKeyword.value) {
+          const kw = searchKeyword.value.toLowerCase()
+          filtered = data.filter(book =>
+            (book.title && book.title.toLowerCase().includes(kw)) ||
+            (book.author && book.author.toLowerCase().includes(kw))
+          )
+        }
+        bookList.value = filtered.slice(start, end)
+        pagination.value.total = filtered.length
+      } else if (data && data.list) {
+        // 分页格式: { list, total }
+        bookList.value = data.list
         pagination.value.total = data.total || 0
+      } else if (data && data.records) {
+        // MyBatis-Plus 格式: { records, total, current, size, pages }
+        // 有些后端实现可能仍然把所有记录都放在 records 里，这里再做一层前端分页
+        let allRecords = data.records
+
+        // 本地搜索过滤：按标题或作者模糊匹配
+        if (searchKeyword.value) {
+          const kw = searchKeyword.value.toLowerCase()
+          allRecords = allRecords.filter(book =>
+            (book.title && book.title.toLowerCase().includes(kw)) ||
+            (book.author && book.author.toLowerCase().includes(kw))
+          )
+        }
+
+        const start = (pagination.value.pageNum - 1) * pagination.value.pageSize
+        const end = start + pagination.value.pageSize
+        bookList.value = allRecords.slice(start, end)
+
+        // 处理总数：优先使用后端提供的 total，其次使用 pages * size，最后退回 records.length
+        if (data.total && data.total > 0) {
+          pagination.value.total = data.total
+        } else if (data.pages && data.size) {
+          pagination.value.total = data.pages * data.size
+        } else {
+          pagination.value.total = allRecords.length
+        }
+      } else {
+        bookList.value = []
+        pagination.value.total = 0
       }
     }
   } catch (error) {
     console.error('获取图书列表失败:', error)
+    ElMessage.error('获取图书列表失败')
   } finally {
     loading.value = false
   }

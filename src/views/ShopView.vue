@@ -34,7 +34,7 @@
             <el-icon><Bell /></el-icon>消息中心
           </el-button>
           <el-divider direction="vertical" />
-          <el-button text class="nav-btn">
+          <el-button text class="nav-btn" @click="about">
             <el-icon><QuestionFilled /></el-icon>帮助中心
           </el-button>
           <el-divider direction="vertical" />
@@ -144,7 +144,7 @@
           <h3>易购上新</h3>
           <el-tag type="success" effect="plain">易购精选 品质保障</el-tag>
         </div>
-        <el-button type="primary" link>
+        <el-button type="primary" link @click="gotoList">
           查看全部 <el-icon><ArrowRight /></el-icon>
         </el-button>
       </div>
@@ -152,7 +152,13 @@
         <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in newProducts" :key="index">
           <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card" @click="openProductDetail(item)">
             <div class="product-img">
-              <el-image :src="item.image" fit="cover" class="card-image" />
+              <el-image :src="item.image" fit="cover" class="card-image">
+                <template #error>
+                  <div class="image-placeholder">
+                    <el-icon :size="40"><Picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
             </div>
             <div class="product-info">
               <el-text class="product-title" truncated>{{ item.title }}</el-text>
@@ -173,7 +179,7 @@
           <h3>好物推荐</h3>
           <el-tag type="warning" effect="plain">中外名著 经典永存</el-tag>
         </div>
-        <el-button type="primary" link>
+        <el-button type="primary" link @click="gotoList">
           查看全部 <el-icon><ArrowRight /></el-icon>
         </el-button>
       </div>
@@ -181,7 +187,13 @@
         <el-col :xs="12" :sm="12" :md="6" v-for="(item, index) in recommendProducts" :key="index">
           <el-card :body-style="{ padding: '0' }" shadow="hover" class="product-card" @click="openProductDetail(item)">
             <div class="product-img">
-              <el-image :src="item.image" fit="cover" class="card-image" />
+              <el-image :src="item.image" fit="cover" class="card-image">
+                <template #error>
+                  <div class="image-placeholder">
+                    <el-icon :size="40"><Picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
             </div>
             <div class="product-info">
               <el-text class="product-title" truncated>{{ item.title }}</el-text>
@@ -371,7 +383,8 @@ import {
   Medal,
   Headset,
   Switch,
-  SwitchButton
+  SwitchButton,
+  Picture
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -571,6 +584,15 @@ const buyNow = async () => {
     }
   }
 }
+// 跳转到list界面
+const gotoList = () => {
+  router.push("/list")
+}
+
+// 跳转到about
+const about = () => {
+  router.push('/about')
+}
 
 // 跳转到我的订单
 const goToOrders = () => {
@@ -650,11 +672,18 @@ const fetchBooks = async () => {
   try {
     const res = await getBookList({})
     if (res.data.code === 200) {
-      const books = res.data.data || []
+      // 兼容分页和非分页返回格式
+      let books = []
+      if (res.data.data && res.data.data.list) {
+        books = res.data.data.list
+      } else if (Array.isArray(res.data.data)) {
+        books = res.data.data
+      }
+
       // 处理图书数据格式
       const formattedBooks = books.map(book => ({
         bid: book.bid,
-        image: book.cover_url || new URL('@/assets/images/goods1.png', import.meta.url).href,
+        image: book.coverUrl || book.cover_url || '',
         title: book.title,
         price: book.price?.toFixed(2) || '0.00',
         author: book.author,
@@ -663,14 +692,22 @@ const fetchBooks = async () => {
         status: book.status
       })).filter(book => book.status === 1) // 只显示上架的图书
 
-      // 分配到新品和推荐
+      // 分配到新品和推荐（各8本）
       if (formattedBooks.length > 0) {
-        const half = Math.ceil(formattedBooks.length / 2)
-        newProducts.value = formattedBooks.slice(0, Math.min(8, half))
-        recommendProducts.value = formattedBooks.slice(half, half + 8)
-
-        // 如果推荐商品不够，用新品填充
-        if (recommendProducts.value.length < 4 && formattedBooks.length >= 4) {
+        // 新品取前8本
+        newProducts.value = formattedBooks.slice(0, 8)
+        // 推荐取第9-16本
+        if (formattedBooks.length > 8) {
+          // 如果有超过8本，推荐显示第9-16本，不足8本则补充前面的
+          const recommend = formattedBooks.slice(8, 16)
+          if (recommend.length < 8) {
+            const need = 8 - recommend.length
+            recommendProducts.value = [...recommend, ...formattedBooks.slice(0, need)]
+          } else {
+            recommendProducts.value = recommend
+          }
+        } else {
+          // 数据不足8本时，推荐商品复用新品数据
           recommendProducts.value = formattedBooks.slice(0, 8)
         }
       }
@@ -938,6 +975,16 @@ onUnmounted(() => {
 
 .product-card:hover .card-image {
   transform: scale(1.08);
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  color: #c0c4cc;
 }
 
 .product-info {

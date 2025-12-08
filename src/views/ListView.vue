@@ -138,7 +138,7 @@
               @click="goToDetail(book)"
             >
               <div class="book-cover">
-                <el-image :src="book.cover" fit="cover" class="cover-image">
+                <el-image :src="getImageUrl(book.coverUrl || book.cover_url || book.cover)" fit="cover" class="cover-image">
                   <template #error>
                     <div class="image-placeholder">
                       <el-icon :size="40"><Picture /></el-icon>
@@ -179,6 +179,19 @@
         <el-empty v-else-if="!loading" description="暂无符合条件的图书">
           <el-button type="primary" @click="handleReset">查看全部图书</el-button>
         </el-empty>
+
+        <!-- 分页 -->
+        <div class="pagination-wrapper" v-if="total > 0">
+          <el-pagination
+            v-model:current-page="pagination.page"
+            v-model:page-size="pagination.pageSize"
+            :page-sizes="[12, 24, 36, 48]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handlePageChange"
+          />
+        </div>
       </div>
 
       <!-- 底部 -->
@@ -201,7 +214,7 @@
       <div class="product-detail" v-if="currentProduct">
         <div class="detail-content">
           <div class="detail-image">
-            <el-image :src="currentProduct.cover || currentProduct.cover_url" fit="cover" class="main-image">
+            <el-image :src="getImageUrl(currentProduct.coverUrl || currentProduct.cover_url || currentProduct.cover)" fit="cover" class="main-image">
               <template #error>
                 <div class="image-placeholder">
                   <el-icon :size="60"><Picture /></el-icon>
@@ -314,16 +327,26 @@ const searchParams = reactive({
   tags: []
 })
 
-// 分类选项
-const tagOptions = ref([
-  '小说', '文学', '历史', '科幻', '悬疑', '经管', '计算机',
-  '心理学', '哲学', '艺术', '教育', '童书', '生活', '旅行'
-])
+// 分类选项（从后端数据动态生成）
+const tagOptions = ref([])
 
 // 图书列表
 const books = ref([])
 const loading = ref(false)
 const sortBy = ref('default')
+const total = ref(0)
+
+// 分页参数
+const pagination = reactive({
+  page: 1,
+  pageSize: 12
+})
+
+// 处理图片URL
+const getImageUrl = (url) => {
+  if (!url) return ''
+  return url
+}
 
 // 是否有搜索条件
 const hasSearchCondition = computed(() => {
@@ -334,7 +357,10 @@ const hasSearchCondition = computed(() => {
 const fetchBooks = async () => {
   loading.value = true
   try {
-    const params = {}
+    const params = {
+      page: pagination.page,
+      pageSize: pagination.pageSize
+    }
     if (searchParams.title) params.title = searchParams.title
     if (searchParams.author) params.author = searchParams.author
     if (searchParams.tags.length > 0) params.tags = searchParams.tags.join(',')
@@ -344,23 +370,120 @@ const fetchBooks = async () => {
     // 兼容两种返回格式：直接数组 或 { code, data } 结构
     if (Array.isArray(res)) {
       books.value = res
+      total.value = res.length
     } else if (res.code === 200) {
-      books.value = res.data || []
+      // 分页返回格式: { data: { list, total } } 或 { data: [] }
+      if (res.data && res.data.list) {
+        books.value = res.data.list || []
+        total.value = res.data.total || 0
+      } else if (Array.isArray(res.data)) {
+        books.value = res.data
+        total.value = res.data.length
+      } else {
+        books.value = res.data || []
+        total.value = res.total || 0
+      }
     } else if (res.data && Array.isArray(res.data)) {
       books.value = res.data
+      total.value = res.total || res.data.length
     } else {
       ElMessage.error(res.message || '获取图书列表失败')
       books.value = []
+      total.value = 0
     }
+
+    // 只显示上架状态的图书（status === 1）
+    books.value = books.value.filter(book => book && book.status === 1)
+
     handleSort()
   } catch (error) {
     console.error('获取图书列表失败:', error)
     ElMessage.error('获取图书列表失败，请稍后重试')
     // 使用模拟数据
     books.value = getMockBooks()
+    total.value = books.value.length
   } finally {
     loading.value = false
   }
+}
+
+// 前端循环分页查询所有图书，用于汇总全部分类选项
+const fetchAllTagsByLoop = async () => {
+  try {
+    const pageSize = 100 // 为标签汇总单独设置一个较大的 pageSize
+    let page = 1
+    let totalPages = 1
+    const tagSet = new Set()
+
+    do {
+      const resp = await request.get('/books', {
+        params: {
+          page,
+          pageSize
+        }
+      })
+      const data = resp.data
+
+      let list = []
+      let totalCount = 0
+      if (Array.isArray(data)) {
+        list = data
+        totalCount = data.length
+      } else if (data.code === 200 && data.data) {
+        if (Array.isArray(data.data.list)) {
+          list = data.data.list
+          totalCount = data.data.total || list.length
+        } else if (Array.isArray(data.data)) {
+          list = data.data
+          totalCount = data.data.length
+        }
+      }
+
+      // 累计当前页的标签
+      list.forEach(book => {
+        if (!book) return
+
+        // tagArray: ["编程", "数据结构", ...]
+        if (Array.isArray(book.tagArray)) {
+          book.tagArray.forEach(t => {
+            const tag = String(t).trim()
+            if (tag) tagSet.add(tag)
+          })
+        }
+
+        // tags: "编程,数据结构,算法"
+        if (book.tags && typeof book.tags === 'string') {
+          book.tags.split(/[,，]/).forEach(t => {
+            const tag = t.trim()
+            if (tag) tagSet.add(tag)
+          })
+        }
+      })
+
+      // 计算总页数并推进页码
+      if (page === 1 && totalCount > 0) {
+        totalPages = Math.ceil(totalCount / pageSize)
+      }
+      page += 1
+    } while (page <= totalPages)
+
+    tagOptions.value = Array.from(tagSet)
+  } catch (error) {
+    console.error('汇总分类标签失败:', error)
+  }
+}
+
+// 分页大小改变
+const handleSizeChange = (size) => {
+  pagination.pageSize = size
+  pagination.page = 1
+  fetchBooks()
+}
+
+// 页码改变
+const handlePageChange = (page) => {
+  pagination.page = page
+  fetchBooks()
 }
 
 // 模拟数据
@@ -390,6 +513,7 @@ const getMockBooks = () => {
 
 // 搜索
 const handleSearch = () => {
+  pagination.page = 1
   fetchBooks()
 }
 
@@ -399,12 +523,14 @@ const handleReset = () => {
   searchParams.author = ''
   searchParams.tags = []
   sortBy.value = 'default'
+  pagination.page = 1
   fetchBooks()
 }
 
 // 清除单个条件
 const clearCondition = (field) => {
   searchParams[field] = ''
+  pagination.page = 1
   fetchBooks()
 }
 
@@ -420,9 +546,16 @@ const clearTag = (tag) => {
 // 排序
 const handleSort = () => {
   if (sortBy.value === 'price-asc') {
-    books.value.sort((a, b) => a.price - b.price)
+    books.value.sort((a, b) => (a.price || 0) - (b.price || 0))
   } else if (sortBy.value === 'price-desc') {
-    books.value.sort((a, b) => b.price - a.price)
+    books.value.sort((a, b) => (b.price || 0) - (a.price || 0))
+  } else {
+    // 默认：按书名的字典序排序
+    books.value.sort((a, b) => {
+      const ta = (a.title || '').toString()
+      const tb = (b.title || '').toString()
+      return ta.localeCompare(tb)
+    })
   }
 }
 
@@ -576,7 +709,10 @@ onMounted(() => {
   if (route.query.author) searchParams.author = route.query.author
   if (route.query.tags) searchParams.tags = route.query.tags.split(',')
 
+  // 1. 加载当前页图书
   fetchBooks()
+  // 2. 前端循环分页，汇总全部分类
+  fetchAllTagsByLoop()
 })
 </script>
 
@@ -800,6 +936,16 @@ onMounted(() => {
 .book-price {
   font-size: 16px;
   font-weight: bold;
+}
+
+/* 分页 */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
 }
 
 /* 底部 */
