@@ -78,12 +78,13 @@
             :placeholder="currentPlaceholder"
             clearable
             class="search-input"
+            @keyup.enter="handleSearch"
           >
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
             <template #append>
-              <el-button type="primary">搜索</el-button>
+              <el-button type="primary" @click="handleSearch">搜索</el-button>
             </template>
           </el-input>
         </div>
@@ -352,7 +353,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createOrderDirectly } from '@/api/order'
-import { getBookList } from '@/api/book'
+import { getBookList, getBookDetail, addBookComment } from '@/api/book'
 import {
   User,
   Document,
@@ -407,6 +408,16 @@ const handleUserCommand = (command) => {
 
 // 搜索相关
 const searchText = ref('')
+
+// 执行搜索
+const handleSearch = () => {
+  const keyword = searchText.value.trim()
+  if (keyword) {
+    router.push({ path: '/list', query: { keyword } })
+  } else {
+    router.push('/list')
+  }
+}
 const placeholderTexts = ['搜一搜', '热销书籍', '猜你喜欢']
 const currentPlaceholderIndex = ref(0)
 const currentPlaceholder = ref(placeholderTexts[0])
@@ -465,21 +476,59 @@ const currentProduct = ref(null)
 const quantity = ref(1)
 
 // 评论数据
-const comments = ref([
-  { user: '读书爱好者', rating: 5, content: '非常好的一本书，内容精彩，值得反复阅读！', time: '2024-12-01' },
-  { user: '文学青年', rating: 4, content: '印刷质量很好，物流也很快，好评！', time: '2024-11-28' }
-])
+const comments = ref([])
+const commentsLoading = ref(false)
 
 const newComment = ref({
   rating: 5,
   content: ''
 })
 
+// 获取图书评论
+const fetchComments = async (bid) => {
+  if (!bid) {
+    comments.value = []
+    return
+  }
+  commentsLoading.value = true
+  try {
+    const res = await getBookDetail(bid)
+    if (res.data.code === 200 && res.data.data) {
+      // 评论可能在 comments 或 reviews 字段
+      const data = res.data.data
+      if (Array.isArray(data.comments)) {
+        comments.value = data.comments.map(c => ({
+          user: c.username || c.user || '匿名用户',
+          rating: c.rating || 5,
+          content: c.comment || c.content || '',
+          time: c.create_time || c.time || ''
+        }))
+      } else if (Array.isArray(data.reviews)) {
+        comments.value = data.reviews.map(c => ({
+          user: c.username || c.user || '匿名用户',
+          rating: c.rating || 5,
+          content: c.comment || c.content || '',
+          time: c.create_time || c.time || ''
+        }))
+      } else {
+        comments.value = []
+      }
+    }
+  } catch (error) {
+    console.error('获取评论失败:', error)
+    comments.value = []
+  } finally {
+    commentsLoading.value = false
+  }
+}
+
 // 打开商品详情
-const openProductDetail = (product) => {
+const openProductDetail = async (product) => {
   currentProduct.value = product
   quantity.value = 1
   productDialogVisible.value = true
+  // 获取评论
+  await fetchComments(product.bid)
 }
 
 // 立即购买
@@ -539,18 +588,36 @@ const addToCartDirect = (product) => {
 }
 
 // 发表评论
-const submitComment = () => {
+const submitComment = async () => {
   if (!newComment.value.content.trim()) return
 
-  comments.value.unshift({
-    user: '我',
-    rating: newComment.value.rating,
-    content: newComment.value.content,
-    time: new Date().toLocaleDateString()
-  })
+  // 检查是否有图书ID
+  if (!currentProduct.value?.bid) {
+    ElMessage.warning('无法评论此商品')
+    return
+  }
 
-  newComment.value = { rating: 5, content: '' }
-  ElMessage.success('评论发表成功！')
+  try {
+    const res = await addBookComment(currentProduct.value.bid, {
+      rating: newComment.value.rating,
+      comment: newComment.value.content
+    })
+
+    if (res.data.code === 200) {
+      // 添加到本地列表
+      comments.value.unshift({
+        user: localStorage.getItem('username') || '我',
+        rating: newComment.value.rating,
+        content: newComment.value.content,
+        time: new Date().toLocaleDateString()
+      })
+      newComment.value = { rating: 5, content: '' }
+      ElMessage.success('评论发表成功！')
+    }
+  } catch (error) {
+    console.error('发表评论失败:', error)
+    ElMessage.error('发表评论失败，请稍后重试')
+  }
 }
 
 // 服务数据

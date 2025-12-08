@@ -190,13 +190,107 @@
         </div>
       </el-footer>
     </div>
+
+    <!-- 商品详情弹窗 -->
+    <el-dialog
+      v-model="productDialogVisible"
+      :title="currentProduct?.title"
+      width="800px"
+      class="product-dialog"
+    >
+      <div class="product-detail" v-if="currentProduct">
+        <div class="detail-content">
+          <div class="detail-image">
+            <el-image :src="currentProduct.cover || currentProduct.cover_url" fit="cover" class="main-image">
+              <template #error>
+                <div class="image-placeholder">
+                  <el-icon :size="60"><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
+          </div>
+          <div class="detail-info">
+            <h2 class="detail-title">{{ currentProduct.title }}</h2>
+            <div class="detail-author" v-if="currentProduct.author">
+              <span class="label">作者：</span>
+              <span>{{ currentProduct.author }}</span>
+            </div>
+            <div class="detail-price">
+              <span class="price-label">售价</span>
+              <span class="price-value">￥{{ (currentProduct.price || 0).toFixed(2) }}</span>
+            </div>
+            <div class="detail-stock" v-if="currentProduct.stock !== undefined">
+              <span class="label">库存：</span>
+              <el-tag :type="currentProduct.stock > 0 ? 'success' : 'danger'" size="small">
+                {{ currentProduct.stock > 0 ? `${currentProduct.stock} 件` : '暂无库存' }}
+              </el-tag>
+            </div>
+            <div class="detail-desc">
+              <h4>商品简介</h4>
+              <p>{{ currentProduct.description || '这是一本精彩的图书，内容丰富，值得阅读。' }}</p>
+            </div>
+            <div class="detail-actions">
+              <el-input-number v-model="quantity" :min="1" :max="99" size="large" />
+              <el-button type="danger" size="large" @click="handleBuyNow">
+                <el-icon><ShoppingCart /></el-icon> 立即购买
+              </el-button>
+              <el-button type="primary" size="large" @click="handleAddToCart">
+                <el-icon><ShoppingCart /></el-icon> 加入购物车
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <el-divider />
+
+        <!-- 评论区 -->
+        <div class="comment-section">
+          <h3>商品评价 ({{ comments.length }})</h3>
+
+          <!-- 发表评论 -->
+          <div class="comment-form">
+            <div class="rating-row">
+              <span>评分：</span>
+              <el-rate v-model="newComment.rating" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" />
+            </div>
+            <el-input
+              v-model="newComment.content"
+              type="textarea"
+              :rows="3"
+              placeholder="分享您的读书体验..."
+              maxlength="500"
+              show-word-limit
+            />
+            <el-button type="primary" @click="submitComment" :disabled="!newComment.content">
+              发表评论
+            </el-button>
+          </div>
+
+          <!-- 评论列表 -->
+          <div class="comment-list">
+            <div class="comment-item" v-for="(comment, index) in comments" :key="index">
+              <div class="comment-header">
+                <el-avatar :size="40" icon="User" />
+                <div class="comment-meta">
+                  <span class="comment-user">{{ comment.user }}</span>
+                  <el-rate v-model="comment.rating" disabled size="small" />
+                </div>
+                <span class="comment-time">{{ comment.time }}</span>
+              </div>
+              <p class="comment-content">{{ comment.content }}</p>
+            </div>
+            <el-empty v-if="comments.length === 0" description="暂无评论，快来发表第一条评论吧！" />
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   HomeFilled,
   User,
@@ -207,6 +301,8 @@ import {
   Picture
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { createOrderDirectly } from '@/api/order'
+import { getBookDetail, addBookComment } from '@/api/book'
 
 const router = useRouter()
 const route = useRoute()
@@ -330,19 +426,152 @@ const handleSort = () => {
   }
 }
 
-// 跳转详情
-const goToDetail = (book) => {
-  router.push(`/books/${book.bid}`)
+// 商品详情弹窗
+const productDialogVisible = ref(false)
+const currentProduct = ref(null)
+const quantity = ref(1)
+
+// 评论数据
+const comments = ref([])
+const commentsLoading = ref(false)
+
+const newComment = ref({
+  rating: 5,
+  content: ''
+})
+
+// 获取图书评论
+const fetchComments = async (bid) => {
+  if (!bid) {
+    comments.value = []
+    return
+  }
+  commentsLoading.value = true
+  try {
+    const res = await getBookDetail(bid)
+    if (res.data.code === 200 && res.data.data) {
+      const data = res.data.data
+      if (Array.isArray(data.comments)) {
+        comments.value = data.comments.map(c => ({
+          user: c.username || c.user || '匿名用户',
+          rating: c.rating || 5,
+          content: c.comment || c.content || '',
+          time: c.create_time || c.time || ''
+        }))
+      } else if (Array.isArray(data.reviews)) {
+        comments.value = data.reviews.map(c => ({
+          user: c.username || c.user || '匿名用户',
+          rating: c.rating || 5,
+          content: c.comment || c.content || '',
+          time: c.create_time || c.time || ''
+        }))
+      } else {
+        comments.value = []
+      }
+    }
+  } catch (error) {
+    console.error('获取评论失败:', error)
+    comments.value = []
+  } finally {
+    commentsLoading.value = false
+  }
 }
 
-// 加入购物车
+// 打开商品详情
+const goToDetail = async (book) => {
+  currentProduct.value = book
+  quantity.value = 1
+  productDialogVisible.value = true
+  await fetchComments(book.bid)
+}
+
+// 立即购买
+const handleBuyNow = async () => {
+  if (!currentProduct.value.bid) {
+    ElMessage.success('订单创建成功')
+    productDialogVisible.value = false
+    router.push({ path: '/user/orders', query: { newOrder: 'true' } })
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确认购买 ${quantity.value} 本《${currentProduct.value.title}》？`,
+      '确认购买',
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    )
+
+    const res = await createOrderDirectly({
+      bid: currentProduct.value.bid,
+      number: quantity.value,
+      addressId: 1
+    })
+
+    if (res.data.code === 200) {
+      ElMessage.success('订单创建成功，请尽快付款')
+      productDialogVisible.value = false
+      router.push({ path: '/user/orders', query: { newOrder: 'true' } })
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('创建订单失败:', error)
+    }
+  }
+}
+
+// 加入购物车（弹窗内）
+const handleAddToCart = () => {
+  ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
+}
+
+// 加入购物车（列表直接点击）
 const addToCart = (book) => {
   ElMessage.success(`已将《${book.title}》加入购物车`)
+}
+
+// 提交评论
+const submitComment = async () => {
+  if (!newComment.value.content.trim()) return
+
+  if (!currentProduct.value?.bid) {
+    ElMessage.warning('无法评论此商品')
+    return
+  }
+
+  try {
+    const res = await addBookComment(currentProduct.value.bid, {
+      rating: newComment.value.rating,
+      comment: newComment.value.content
+    })
+
+    if (res.data.code === 200) {
+      comments.value.unshift({
+        user: localStorage.getItem('username') || '匿名用户',
+        rating: newComment.value.rating,
+        content: newComment.value.content,
+        time: new Date().toLocaleDateString()
+      })
+      newComment.value.content = ''
+      newComment.value.rating = 5
+      ElMessage.success('评论发表成功')
+    }
+  } catch (error) {
+    console.error('发表评论失败:', error)
+    ElMessage.error('发表评论失败，请稍后重试')
+  }
 }
 
 // 初始化
 onMounted(() => {
   // 从路由参数获取搜索条件
+  // 支持 keyword 参数（从首页搜索框跳转）
+  if (route.query.keyword) {
+    searchParams.title = route.query.keyword
+  }
   if (route.query.title) searchParams.title = route.query.title
   if (route.query.author) searchParams.author = route.query.author
   if (route.query.tags) searchParams.tags = route.query.tags.split(',')
@@ -616,5 +845,183 @@ onMounted(() => {
     gap: 12px;
     align-items: flex-start;
   }
+}
+
+/* 商品详情弹窗 */
+.product-detail {
+  padding: 0 10px;
+}
+
+.detail-content {
+  display: flex;
+  gap: 30px;
+}
+
+.detail-image {
+  flex-shrink: 0;
+  width: 280px;
+  height: 350px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f7fa;
+}
+
+.detail-image .main-image {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-image .image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  color: #adb5bd;
+}
+
+.detail-info {
+  flex: 1;
+}
+
+.detail-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 12px 0;
+}
+
+.detail-author {
+  margin-bottom: 12px;
+  color: #606266;
+}
+
+.detail-author .label {
+  color: #909399;
+}
+
+.detail-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 15px;
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  border-radius: 8px;
+}
+
+.price-label {
+  font-size: 14px;
+  color: #909399;
+}
+
+.price-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #f56c6c;
+}
+
+.detail-stock {
+  margin-bottom: 12px;
+}
+
+.detail-stock .label {
+  color: #909399;
+  margin-right: 8px;
+}
+
+.detail-desc {
+  margin-bottom: 20px;
+}
+
+.detail-desc h4 {
+  font-size: 14px;
+  color: #303133;
+  margin-bottom: 8px;
+}
+
+.detail-desc p {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* 评论区 */
+.comment-section h3 {
+  font-size: 16px;
+  color: #303133;
+  margin-bottom: 20px;
+}
+
+.comment-form {
+  background: #f5f7fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.comment-form .el-button {
+  margin-top: 12px;
+}
+
+.comment-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.comment-meta {
+  flex: 1;
+}
+
+.comment-user {
+  display: block;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 4px;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #909399;
+}
+
+.comment-content {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 52px;
 }
 </style>

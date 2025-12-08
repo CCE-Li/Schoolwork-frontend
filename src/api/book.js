@@ -14,7 +14,7 @@ export function getBookList(params) {
   })
 }
 
-// 获取图书详情
+// 获取图书详情（包含评论）
 export function getBookDetail(bid) {
   return request({
     url: `/books/${bid}`,
@@ -23,11 +23,13 @@ export function getBookDetail(bid) {
 }
 
 // 添加图书评论
-export function addBookComment(bid, uid, data) {
+export function addBookComment(bid, data) {
   return request({
     url: `/books/${bid}`,
     method: 'post',
-    params: { uid },
-    data
+    data: {
+      rating: data.rating,
+      comment: data.comment
+    }
   })
 }
