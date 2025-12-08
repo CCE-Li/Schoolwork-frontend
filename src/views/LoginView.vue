@@ -96,6 +96,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElRadioGroup, ElRadioButton, ElDialog, ElButton } from 'element-plus'
 import axios from 'axios'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 
@@ -133,6 +134,8 @@ const showMessage = (message, autoClose = true) => {
   }
 }
 
+const userStore = useUserStore()
+
 // 登录处理
 const handleLogin = async () => {
   // 表单验证
@@ -160,6 +163,14 @@ const handleLogin = async () => {
       localStorage.setItem('token', token)
       localStorage.setItem('username', loginForm.username)
       localStorage.setItem('isLoggedIn', 'true')
+
+      // 同步更新 Pinia 中的用户状态
+      userStore.login({
+        token,
+        username: loginForm.username,
+        role: loginForm.userType === 'admin' ? 'admin' : 'user',
+        userId: response.data.data?.userId || ''
+      })
 
       // 根据登录类型跳转并保存角色
       if (loginForm.userType === 'admin') {

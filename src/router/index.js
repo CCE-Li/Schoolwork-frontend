@@ -88,6 +88,13 @@ const router = createRouter({
       component: () => import('../views/UserOrderView.vue'),
       meta: { requiresAuth: true }
     },
+    // 用户个人设置页面
+    {
+      path: '/user/profile',
+      name: 'user-profile',
+      component: () => import('../views/UserProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
     // 404页面路由配置
     {
       path: '/:pathMatch(.*)*',
