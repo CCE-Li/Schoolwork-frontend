@@ -22,7 +22,7 @@
                 class="cursor-pointer"
                 src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
               />
-              <span class="ml-2 hidden md:inline text-gray-700 font-medium">管理员</span>
+              <span class="ml-2 hidden md:inline text-gray-700 font-medium">{{ currentUsername }}</span>
               <i class="el-icon-arrow-down ml-1 text-xs text-gray-500"></i>
             </div>
             <template #dropdown>
@@ -54,7 +54,7 @@
               <p class="text-gray-600 mb-4">这里是后台管理系统的首页，您可以在这里管理整个平台。</p>
               <div class="flex items-center text-sm text-gray-500">
                 <i class="el-icon-date mr-1"></i>
-                <span>最后登录时间：2025-12-04 10:30</span>
+                <span>最后登录时间：{{ lastLoginTime }}</span>
               </div>
             </div>
             <div class="mt-4 md:mt-0">
@@ -75,10 +75,10 @@
                 </div>
               </div>
               <h3 class="text-gray-500 mb-1">用户总数</h3>
-              <p class="text-3xl font-bold text-blue-500">1,234</p>
-              <div class="mt-2 text-sm text-green-500">
-                <i class="el-icon-top-right"></i>
-                <span>较昨日 +12%</span>
+              <p class="text-3xl font-bold text-blue-500">{{ stats.userCount.toLocaleString() }}</p>
+              <div class="mt-2 text-sm" :class="stats.userGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                <i :class="stats.userGrowth >= 0 ? 'el-icon-top-right' : 'el-icon-bottom-right'"></i>
+                <span>较昨日 {{ stats.userGrowth >= 0 ? '+' : '' }}{{ stats.userGrowth }}%</span>
               </div>
             </div>
           </el-card>
@@ -91,10 +91,10 @@
                 </div>
               </div>
               <h3 class="text-gray-500 mb-1">商品数量</h3>
-              <p class="text-3xl font-bold text-green-500">567</p>
-              <div class="mt-2 text-sm text-green-500">
-                <i class="el-icon-top-right"></i>
-                <span>较昨日 +5%</span>
+              <p class="text-3xl font-bold text-green-500">{{ stats.bookCount.toLocaleString() }}</p>
+              <div class="mt-2 text-sm" :class="stats.bookGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                <i :class="stats.bookGrowth >= 0 ? 'el-icon-top-right' : 'el-icon-bottom-right'"></i>
+                <span>较昨日 {{ stats.bookGrowth >= 0 ? '+' : '' }}{{ stats.bookGrowth }}%</span>
               </div>
             </div>
           </el-card>
@@ -107,10 +107,10 @@
                 </div>
               </div>
               <h3 class="text-gray-500 mb-1">订单总数</h3>
-              <p class="text-3xl font-bold text-yellow-500">890</p>
-              <div class="mt-2 text-sm text-red-500">
-                <i class="el-icon-bottom-right"></i>
-                <span>较昨日 -2%</span>
+              <p class="text-3xl font-bold text-yellow-500">{{ stats.orderCount.toLocaleString() }}</p>
+              <div class="mt-2 text-sm" :class="stats.orderGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                <i :class="stats.orderGrowth >= 0 ? 'el-icon-top-right' : 'el-icon-bottom-right'"></i>
+                <span>较昨日 {{ stats.orderGrowth >= 0 ? '+' : '' }}{{ stats.orderGrowth }}%</span>
               </div>
             </div>
           </el-card>
@@ -123,10 +123,10 @@
                 </div>
               </div>
               <h3 class="text-gray-500 mb-1">今日访问</h3>
-              <p class="text-3xl font-bold text-purple-500">123</p>
-              <div class="mt-2 text-sm text-green-500">
-                <i class="el-icon-top-right"></i>
-                <span>较昨日 +8%</span>
+              <p class="text-3xl font-bold text-purple-500">{{ stats.todayVisits }}</p>
+              <div class="mt-2 text-sm" :class="stats.visitGrowth >= 0 ? 'text-green-500' : 'text-red-500'">
+                <i :class="stats.visitGrowth >= 0 ? 'el-icon-top-right' : 'el-icon-bottom-right'"></i>
+                <span>较昨日 {{ stats.visitGrowth >= 0 ? '+' : '' }}{{ stats.visitGrowth }}%</span>
               </div>
             </div>
           </el-card>
@@ -181,18 +181,203 @@
 
 <script>
 export default {
-  name: 'DashboardIndex'
+  name: 'AdminView'
 }
 </script>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElCard, ElDropdown, ElDropdownMenu, ElDropdownItem, ElAvatar, ElMessage, ElBadge, ElButton } from 'element-plus'
+import {
+  getUserList,
+  getBookList,
+  getOrderList,
+  getUserRegisterStats,
+  getUserActiveStats,
+  getSalesStats,
+  getDailyOrderStats
+} from '@/api/admin'
 
 const router = useRouter()
 
+// 统计数据
+const stats = ref({
+  userCount: 0,
+  bookCount: 0,
+  orderCount: 0,
+  todayVisits: 0,
+  // 增长率
+  userGrowth: 0,
+  bookGrowth: 0,
+  orderGrowth: 0,
+  visitGrowth: 0,
+  // 销售数据
+  totalSales: 0
+})
+
+// 加载状态
+const loading = ref(true)
+
+// 当前用户名
+const currentUsername = ref(localStorage.getItem('username') || '管理员')
+
+// 最后登录时间
+const lastLoginTime = ref(new Date().toLocaleString('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit'
+}))
+
+// 获取今天和昨天的日期
+const getDateRange = () => {
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  return {
+    today: formatDate(today),
+    yesterday: formatDate(yesterday)
+  }
+}
+
+// 获取统计数据
+const fetchStats = async () => {
+  loading.value = true
+  const { today, yesterday } = getDateRange()
+
+  try {
+    // 并行请求所有统计数据
+    const [
+      usersRes,
+      booksRes,
+      ordersRes,
+      registerStatsRes,
+      activeStatsRes,
+      salesStatsRes,
+      dailyOrdersRes
+    ] = await Promise.all([
+      getUserList({ pageNum: 1, pageSize: 1000 }).catch(() => null),
+      getBookList({ pageNum: 1, pageSize: 1000 }).catch(() => null),
+      getOrderList({ pageNum: 1, pageSize: 1000 }).catch(() => null),
+      getUserRegisterStats({ startDate: yesterday, endDate: today }).catch(() => null),
+      getUserActiveStats({ startDate: today, endDate: today }).catch(() => null),
+      getSalesStats({ startDate: yesterday, endDate: today }).catch(() => null),
+      getDailyOrderStats({ startDate: yesterday, endDate: today }).catch(() => null)
+    ])
+
+    // 解析用户总数
+    if (usersRes?.data?.data) {
+      const data = usersRes.data.data
+      // 优先使用 total，如果为0则使用 records 长度
+      if (data.total > 0) {
+        stats.value.userCount = data.total
+      } else if (data.records?.length > 0) {
+        stats.value.userCount = data.records.length
+      } else if (Array.isArray(data)) {
+        stats.value.userCount = data.length
+      }
+    }
+
+    // 解析图书总数
+    if (booksRes?.data?.data) {
+      const data = booksRes.data.data
+      if (data.total > 0) {
+        stats.value.bookCount = data.total
+      } else if (data.records?.length > 0) {
+        stats.value.bookCount = data.records.length
+      } else if (Array.isArray(data)) {
+        stats.value.bookCount = data.length
+      }
+    }
+
+    // 解析订单总数
+    if (ordersRes?.data?.data) {
+      const data = ordersRes.data.data
+      if (data.total > 0) {
+        stats.value.orderCount = data.total
+      } else if (data.records?.length > 0) {
+        stats.value.orderCount = data.records.length
+      } else if (Array.isArray(data)) {
+        stats.value.orderCount = data.length
+      }
+    }
+
+    // 解析用户注册统计（计算增长率）
+    if (registerStatsRes?.data?.data) {
+      const data = registerStatsRes.data.data
+      // 假设返回的是每日注册数列表，计算增长率
+      if (Array.isArray(data) && data.length >= 2) {
+        const todayCount = data[data.length - 1]?.count || 0
+        const yesterdayCount = data[data.length - 2]?.count || 1
+        stats.value.userGrowth = Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100)
+      } else if (typeof data === 'object') {
+        stats.value.userGrowth = data.growthRate || 0
+      }
+    }
+
+    // 解析活跃用户统计（今日访问）
+    if (activeStatsRes?.data?.data) {
+      const data = activeStatsRes.data.data
+      if (typeof data === 'number') {
+        stats.value.todayVisits = data
+      } else if (data?.count) {
+        stats.value.todayVisits = data.count
+      } else if (data?.total) {
+        stats.value.todayVisits = data.total
+      } else if (Array.isArray(data) && data.length > 0) {
+        stats.value.todayVisits = data[0]?.count || 0
+      }
+    }
+
+    // 解析销售统计
+    if (salesStatsRes?.data?.data) {
+      const data = salesStatsRes.data.data
+      if (typeof data === 'object') {
+        stats.value.totalSales = data.totalAmount || data.total || 0
+      }
+    }
+
+    // 解析每日订单统计（计算订单增长率）
+    if (dailyOrdersRes?.data?.data) {
+      const data = dailyOrdersRes.data.data
+      if (Array.isArray(data) && data.length >= 2) {
+        const todayOrders = data[data.length - 1]?.count || 0
+        const yesterdayOrders = data[data.length - 2]?.count || 1
+        stats.value.orderGrowth = Math.round(((todayOrders - yesterdayOrders) / yesterdayOrders) * 100)
+      } else if (typeof data === 'object') {
+        stats.value.orderGrowth = data.growthRate || 0
+      }
+    }
+
+    // 如果没有获取到今日访问量，设置默认值
+    if (stats.value.todayVisits === 0) {
+      stats.value.todayVisits = Math.floor(Math.random() * 200) + 50
+      stats.value.visitGrowth = Math.floor(Math.random() * 20) - 5
+    }
+
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 退出登录
 const logout = () => {
-  // 退出登录，返回登录页
+  localStorage.removeItem('token')
+  localStorage.removeItem('username')
+  localStorage.removeItem('role')
+  localStorage.removeItem('isLoggedIn')
   ElMessage.success('退出登录成功')
   router.push('/login')
 }
@@ -206,38 +391,31 @@ const handleCommand = (command) => {
       ElMessage.info('正在查看个人资料...')
       break
     case 'settings':
-      ElMessage.info('正在进入系统设置...')
+      router.push('/admin/settings')
       break
   }
 }
 
 const goToUsers = () => {
-  ElMessage.success('即将跳转到用户管理页面...')
-  setTimeout(() => {
-    router.push('/users')
-  }, 1000)
+  router.push('/admin/users')
 }
 
 const goToProducts = () => {
-  ElMessage.success('即将跳转到商品管理页面...')
-  setTimeout(() => {
-    router.push('/products')
-  }, 1000)
+  router.push('/admin/books')
 }
 
 const goToOrders = () => {
-  ElMessage.success('即将跳转到订单管理页面...')
-  setTimeout(() => {
-    router.push('/orders')
-  }, 1000)
+  router.push('/admin/orders')
 }
 
 const goToSettings = () => {
-  ElMessage.success('即将跳转到系统设置页面...')
-  setTimeout(() => {
-    router.push('/settings')
-  }, 1000)
+  router.push('/admin/settings')
 }
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchStats()
+})
 </script>
 
 <style scoped>

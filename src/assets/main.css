@@ -5,23 +5,16 @@ html, body {
   width: 100%;
 }
 
-/* 美化滚动条 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* 隐藏所有滚动条 */
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c0c4cc;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #909399;
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome/Safari */
+  width: 0 !important;
+  height: 0 !important;
 }
 
 #app {
