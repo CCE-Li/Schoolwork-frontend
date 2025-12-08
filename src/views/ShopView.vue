@@ -117,6 +117,7 @@
               v-for="(item, idx) in nav.desc.split(' ')"
               :key="idx"
               :index="`${index}-${idx}`"
+              @click="goToListWithTag(item)"
             >
               {{ item }}
             </el-menu-item>
@@ -396,7 +397,7 @@ const currentUsername = ref(localStorage.getItem('username') || '用户')
 const handleUserCommand = (command) => {
   switch (command) {
     case 'profile':
-      ElMessage.info('个人中心功能开发中...')
+      router.push('/user/profile')
       break
     case 'switch':
       // 切换账号：清除当前登录信息，跳转到登录页
@@ -587,6 +588,19 @@ const buyNow = async () => {
 // 跳转到list界面
 const gotoList = () => {
   router.push("/list")
+}
+
+// 从首页根据分类跳转到列表页并按分类查询
+const goToListWithTag = (tag) => {
+  const t = (tag || '').toString().trim()
+  if (!t) {
+    router.push('/list')
+  } else {
+    router.push({
+      path: '/list',
+      query: { tags: t }
+    })
+  }
 }
 
 // 跳转到about
