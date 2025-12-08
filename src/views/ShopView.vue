@@ -74,7 +74,7 @@
         <!-- 购物车 -->
         <div class="cart">
           <el-badge :value="0" :max="99" class="cart-badge">
-            <el-button type="danger" plain>
+            <el-button type="danger" plain @click="goToCart">
               <el-icon><ShoppingCart /></el-icon>
               购物车
             </el-button>
@@ -251,6 +251,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   User,
   Document,
@@ -269,11 +270,17 @@ import {
 } from '@element-plus/icons-vue'
 
 // 搜索相关
+const router = useRouter()
 const searchText = ref('')
 const placeholderTexts = ['搜一搜', '热销书籍', '猜你喜欢']
 const currentPlaceholderIndex = ref(0)
 const currentPlaceholder = ref(placeholderTexts[0])
 let placeholderTimer = null
+
+// 跳转到购物车页面
+const goToCart = () => {
+  router.push('/cart')
+}
 
 const bannerImages = ref([
   new URL('@/assets/images/1.png', import.meta.url).href,
@@ -347,6 +354,11 @@ onUnmounted(() => {
   if (placeholderTimer) {
     clearInterval(placeholderTimer)
   }
+})
+
+// 导出方法供模板使用
+defineExpose({
+  goToCart
 })
 </script>
 

@@ -48,6 +48,12 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: NotFound
+    },
+    //购物车界面路由配置
+    {
+      path:'/cart',
+      name:'cart',
+      component: () => import('../views/CartView.vue')
     }
   ],
 
