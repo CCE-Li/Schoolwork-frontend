@@ -161,14 +161,24 @@
                 <el-text class="book-author" type="info" truncated>{{ book.author }}</el-text>
                 <div class="book-footer">
                   <el-text type="danger" class="book-price">￥{{ book.price }}</el-text>
-                  <el-button
-                    type="primary"
-                    size="small"
-                    circle
-                    @click.stop="addToCart(book)"
-                  >
-                    <el-icon><ShoppingCart /></el-icon>
-                  </el-button>
+                  <div class="book-actions">
+                    <el-button
+                      type="primary"
+                      size="small"
+                      circle
+                      @click.stop="addToCart(book)"
+                    >
+                      <el-icon><ShoppingCart /></el-icon>
+                    </el-button>
+                    <el-button
+                      :type="isFavourite(book.bid) ? 'danger' : 'info'"
+                      size="small"
+                      circle
+                      @click.stop="addToFavourite(book)"
+                    >
+                      <el-icon><StarFilled /></el-icon>
+                    </el-button>
+                  </div>
                 </div>
               </div>
             </el-card>
@@ -311,11 +321,13 @@ import {
   ShoppingCart,
   Search,
   RefreshRight,
-  Picture
+  Picture,
+  StarFilled
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 import { createOrderDirectly } from '@/api/order'
 import { getBookDetail, addBookComment } from '@/api/book'
+import { getUserFavourites, addFavourite, deleteFavourite } from '@/api/user'
 
 const router = useRouter()
 const route = useRoute()
@@ -335,6 +347,32 @@ const books = ref([])
 const loading = ref(false)
 const sortBy = ref('default')
 const total = ref(0)
+
+// 收藏相关
+const favouriteBids = ref([])
+
+const isFavourite = (bid) => {
+  if (!bid) return false
+  return favouriteBids.value.includes(bid)
+}
+
+const loadFavourites = async () => {
+  try {
+    const res = await getUserFavourites()
+    const body = res.data
+    let list = []
+    if (Array.isArray(body)) {
+      list = body
+    } else if (Array.isArray(body?.data)) {
+      list = body.data
+    } else if (Array.isArray(body?.data?.list)) {
+      list = body.data.list
+    }
+    favouriteBids.value = list.map(b => b.bid || b.id).filter(Boolean)
+  } catch (error) {
+    console.error('加载收藏列表失败:', error)
+  }
+}
 
 // 分页参数
 const pagination = reactive({
@@ -666,6 +704,34 @@ const addToCart = (book) => {
   ElMessage.success(`已将《${book.title}》加入购物车`)
 }
 
+// 收藏 / 取消收藏
+const addToFavourite = async (book) => {
+  if (!book || !book.bid) {
+    ElMessage.warning('该商品暂不支持收藏')
+    return
+  }
+
+  const bid = book.bid
+  const already = isFavourite(bid)
+
+  try {
+    if (already) {
+      await deleteFavourite(bid)
+      favouriteBids.value = favouriteBids.value.filter(id => id !== bid)
+      ElMessage.success(`已取消收藏《${book.title}》`)
+    } else {
+      await addFavourite(bid)
+      if (!favouriteBids.value.includes(bid)) {
+        favouriteBids.value.push(bid)
+      }
+      ElMessage.success(`已收藏《${book.title}》`)
+    }
+  } catch (error) {
+    console.error('切换收藏状态失败:', error)
+    ElMessage.error('操作失败，请稍后重试')
+  }
+}
+
 // 提交评论
 const submitComment = async () => {
   if (!newComment.value.content.trim()) return
@@ -713,6 +779,8 @@ onMounted(() => {
   fetchBooks()
   // 2. 前端循环分页，汇总全部分类
   fetchAllTagsByLoop()
+  // 3. 加载当前用户收藏状态
+  loadFavourites()
 })
 </script>
 

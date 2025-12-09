@@ -26,6 +26,13 @@ const router = createRouter({
       name: 'register',
       component: RegisterView
     },
+    // 网站设置页面
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsView.vue'),
+      meta: { requiresAuth: true }
+    },
     // 购物界面路由配置
     {
       path: '/shop',
@@ -93,6 +100,20 @@ const router = createRouter({
       path: '/user/profile',
       name: 'user-profile',
       component: () => import('../views/UserProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
+    // 用户收藏页面
+    {
+      path: '/user/favorite',
+      name: 'user-favorite',
+      component: () => import('../views/UserFavoriteView.vue'),
+      meta: { requiresAuth: true }
+    },
+    // AI 客服聊天页面
+    {
+      path: '/ai-chat',
+      name: 'ai-chat',
+      component: () => import('../views/AIChatView.vue'),
       meta: { requiresAuth: true }
     },
     // 404页面路由配置

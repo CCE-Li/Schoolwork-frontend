@@ -16,6 +16,9 @@
                 <el-dropdown-item command="profile">
                   <el-icon><User /></el-icon>个人中心
                 </el-dropdown-item>
+                <el-dropdown-item command="favourite">
+                  <el-icon><Document /></el-icon>我的收藏
+                </el-dropdown-item>
                 <el-dropdown-item command="switch" divided>
                   <el-icon><Switch /></el-icon>切换账号
                 </el-dropdown-item>
@@ -38,11 +41,11 @@
             <el-icon><QuestionFilled /></el-icon>帮助中心
           </el-button>
           <el-divider direction="vertical" />
-          <el-button text class="nav-btn">
+          <el-button text class="nav-btn" @click="gotoAIChat">
             <el-icon><Service /></el-icon>在线客服
           </el-button>
           <el-divider direction="vertical" />
-          <el-button text class="nav-btn">
+          <el-button text class="nav-btn" @click="goToSettings">
             <el-icon><Setting /></el-icon>设置
           </el-button>
           <el-divider direction="vertical" />
@@ -164,9 +167,24 @@
             <div class="product-info">
               <el-text class="product-title" truncated>{{ item.title }}</el-text>
               <el-text type="danger" class="product-price">￥{{ item.price }}</el-text>
-              <el-button type="primary" size="small" class="add-cart-btn" @click.stop="addToCartDirect(item)">
-                <el-icon><ShoppingCart /></el-icon> 加入购物车
-              </el-button>
+              <div class="product-actions">
+                <el-button
+                  type="primary"
+                  size="small"
+                  class="add-cart-btn"
+                  @click.stop="addToCartDirect(item)"
+                >
+                  <el-icon><ShoppingCart /></el-icon> 加入购物车
+                </el-button>
+                <el-button
+                  :type="isFavourite(item.bid) ? 'danger' : 'info'"
+                  size="small"
+                  circle
+                  @click.stop="addToFavourite(item)"
+                >
+                  <el-icon><StarFilled /></el-icon>
+                </el-button>
+              </div>
             </div>
           </el-card>
         </el-col>
@@ -174,7 +192,7 @@
     </div>
 
     <!-- 好物推荐 -->
-    <div class="section wrapper">
+    <div class="section wrapper" v-if="showRecommend">
       <div class="section-header">
         <div class="section-title">
           <h3>好物推荐</h3>
@@ -199,9 +217,24 @@
             <div class="product-info">
               <el-text class="product-title" truncated>{{ item.title }}</el-text>
               <el-text type="danger" class="product-price">￥{{ item.price }}</el-text>
-              <el-button type="primary" size="small" class="add-cart-btn" @click.stop="addToCartDirect(item)">
-                <el-icon><ShoppingCart /></el-icon> 加入购物车
-              </el-button>
+              <div class="product-actions">
+                <el-button
+                  type="primary"
+                  size="small"
+                  class="add-cart-btn"
+                  @click.stop="addToCartDirect(item)"
+                >
+                  <el-icon><ShoppingCart /></el-icon> 加入购物车
+                </el-button>
+                <el-button
+                  :type="isFavourite(item.bid) ? 'danger' : 'info'"
+                  size="small"
+                  circle
+                  @click.stop="addToFavourite(item)"
+                >
+                  <el-icon><StarFilled /></el-icon>
+                </el-button>
+              </div>
             </div>
           </el-card>
         </el-col>
@@ -367,6 +400,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createOrderDirectly } from '@/api/order'
 import { getBookList, getBookDetail, addBookComment } from '@/api/book'
+import { getUserFavourites, addFavourite, deleteFavourite } from '@/api/user'
 import {
   User,
   Document,
@@ -385,7 +419,8 @@ import {
   Headset,
   Switch,
   SwitchButton,
-  Picture
+  Picture,
+  StarFilled
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -398,6 +433,9 @@ const handleUserCommand = (command) => {
   switch (command) {
     case 'profile':
       router.push('/user/profile')
+      break
+    case 'favourite':
+      router.push('/user/favorite')
       break
     case 'switch':
       // 切换账号：清除当前登录信息，跳转到登录页
@@ -418,6 +456,16 @@ const handleUserCommand = (command) => {
       router.push('/login')
       break
   }
+}
+
+// 跳转到网站设置
+const goToSettings = () => {
+  router.push('/settings')
+}
+
+// 跳转到ai客服
+const gotoAIChat = () => {
+  router.push('/ai-chat')
 }
 
 // 搜索相关
@@ -448,6 +496,8 @@ const bannerImages = ref([
 const phoneQrcode = new URL('@/assets/images/phone.png', import.meta.url).href
 const wechatQrcode = new URL('@/assets/images/wechat.png', import.meta.url).href
 const appQrcode = new URL('@/assets/images/app.png', import.meta.url).href
+
+const showRecommend = ref(true)
 
 // 侧栏导航数据
 const navItems = ref([
@@ -483,6 +533,59 @@ const recommendProducts = ref([
   { image: new URL('@/assets/images/goods3.png', import.meta.url).href, title: '台湾百科全书·历史', price: '91.00' },
   { image: new URL('@/assets/images/goods4.png', import.meta.url).href, title: '薛定谔的猫', price: '49.80' }
 ])
+
+// 收藏相关
+const favouriteBids = ref([])
+
+const isFavourite = (bid) => {
+  if (!bid) return false
+  return favouriteBids.value.includes(bid)
+}
+
+const loadFavourites = async () => {
+  try {
+    const res = await getUserFavourites()
+    const body = res.data
+    let list = []
+    if (Array.isArray(body)) {
+      list = body
+    } else if (Array.isArray(body?.data)) {
+      list = body.data
+    } else if (Array.isArray(body?.data?.list)) {
+      list = body.data.list
+    }
+    favouriteBids.value = list.map(b => b.bid || b.id).filter(Boolean)
+  } catch (error) {
+    console.error('加载收藏列表失败:', error)
+  }
+}
+
+const addToFavourite = async (product) => {
+  if (!product || !product.bid) {
+    ElMessage.warning('该商品暂不支持收藏')
+    return
+  }
+
+  const bid = product.bid
+  const already = isFavourite(bid)
+
+  try {
+    if (already) {
+      await deleteFavourite(bid)
+      favouriteBids.value = favouriteBids.value.filter(id => id !== bid)
+      ElMessage.success(`已取消收藏《${product.title}》`)
+    } else {
+      await addFavourite(bid)
+      if (!favouriteBids.value.includes(bid)) {
+        favouriteBids.value.push(bid)
+      }
+      ElMessage.success(`已收藏《${product.title}》`)
+    }
+  } catch (error) {
+    console.error('切换收藏状态失败:', error)
+    ElMessage.error('操作失败，请稍后重试')
+  }
+}
 
 // 商品详情弹窗
 const productDialogVisible = ref(false)
@@ -734,6 +837,11 @@ const fetchBooks = async () => {
 onMounted(() => {
   startPlaceholderRotation()
   fetchBooks()
+  const root = document.documentElement
+  if (root && root.dataset) {
+    showRecommend.value = root.dataset.showRecommend !== '0'
+  }
+  loadFavourites()
 })
 
 onUnmounted(() => {
@@ -862,8 +970,18 @@ onUnmounted(() => {
   border-radius: 20px 0 0 20px;
 }
 
+.search-input :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--el-color-primary, #409eff);
+}
+
 .search-input :deep(.el-input-group__append) {
   border-radius: 0 20px 20px 0;
+}
+
+.search-input :deep(.el-input-group__append .el-button) {
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 /* 购物车 */
@@ -985,6 +1103,13 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   transition: transform 0.3s ease;
+}
+
+.product-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .product-card:hover .card-image {

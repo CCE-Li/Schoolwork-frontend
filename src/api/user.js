@@ -32,3 +32,19 @@ export function getUserFavourites() {
     method: 'get'
   })
 }
+
+// 添加收藏
+export function addFavourite(bid) {
+  return request({
+    url: `/user/favourites/${bid}`,
+    method: 'post'
+  })
+}
+
+// 取消收藏
+export function deleteFavourite(bid) {
+  return request({
+    url: `/user/favourites/${bid}`,
+    method: 'delete'
+  })
+}

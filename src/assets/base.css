@@ -7,9 +7,22 @@
 
 /* 设置网页统一的字体大小、行高、字体系列相关属性 */
 body {
-  font: 16px/1.5  "Microsoft Yahei",
+  font: var(--base-font-size, 16px)/1.5  "Microsoft Yahei",
     "Hiragino Sans GB", "Heiti SC", "WenQuanYi Micro Hei", sans-serif;
   color: #333;
+  background-color: #f5f5f5;
+}
+
+/* 深色模式 */
+html[data-theme-mode='dark'] body {
+  background-color: #121212;
+  color: #e5e5e5;
+}
+
+/* 主题主色 - 链接 */
+a {
+  text-decoration: none;
+  color: var(--primary-color, #333);
 }
 
 /* 去除列表默认样式 */
@@ -24,17 +37,19 @@ i {
   font-style: normal;
 }
 
-/* 去除a标签默认下划线，并设置默认文字颜色 */
-a {
-  text-decoration: none;
-  color: #333;
-}
+/* 去除a标签默认下划线 */
 
 /* 设置img的垂直对齐方式为居中对齐，去除img默认下间隙 */
 img {
   width: 100%;
   height: 100%;
   vertical-align: middle;
+}
+
+/* 布局宽度：在 wide 模式下减少左右留白 */
+html[data-layout-width='wide'] .shop-page .main-content {
+  padding-left: 60px;
+  padding-right: 60px;
 }
 
 /* 去除input默认样式 */
@@ -53,3 +68,527 @@ h6 {
   font-weight: 400;
 }
 
+/* ================= 暗色主题扩展样式 ================= */
+html[data-theme-mode='dark'] .shop-page {
+  background-color: #181818;
+}
+
+html[data-theme-mode='dark'] .shop-page .fixed-header {
+  background-color: transparent !important;
+}
+
+html[data-theme-mode='dark'] .shop-page .shortcut {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme-mode='dark'] .shop-page .shortcut .nav-btn {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html[data-theme-mode='dark'] .shop-page .header {
+  background-color: #1f1f1f;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme-mode='dark'] .shop-page .section {
+  background-color: #1f1f1f;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* About 页面暗色主题 */
+html[data-theme-mode='dark'] .about {
+  background: radial-gradient(circle at top, #1f1f1f 0%, #121212 60%);
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .about h1 {
+  color: #ffffff;
+}
+
+html[data-theme-mode='dark'] .about .description {
+  color: #c0c0c0;
+}
+
+html[data-theme-mode='dark'] .about .feature-item {
+  background: #1f1f1f;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+}
+
+html[data-theme-mode='dark'] .about .feature-item h3 {
+  color: var(--el-color-primary, #f56c6c);
+}
+
+html[data-theme-mode='dark'] .about .feature-item p {
+  color: #d0d0d0;
+}
+
+html[data-theme-mode='dark'] .shop-page .banner-section {
+  background-color: #202020;
+}
+
+html[data-theme-mode='dark'] .shop-page .footer {
+  background-color: #121212;
+  color: #ddd;
+}
+
+html[data-theme-mode='dark'] .shop-page .footer a,
+html[data-theme-mode='dark'] .shop-page .footer .el-text {
+  color: #bbb !important;
+}
+
+html[data-theme-mode='dark'] .shop-page .section-title h3,
+html[data-theme-mode='dark'] .shop-page .product-title,
+html[data-theme-mode='dark'] .shop-page .copyright-text {
+  color: #f0f0f0;
+}
+
+html[data-theme-mode='dark'] .shop-page .el-card,
+html[data-theme-mode='dark'] .shop-page .product-card {
+  background-color: #242424;
+  border-color: #303030;
+}
+
+html[data-theme-mode='dark'] .shop-page .el-input__wrapper,
+html[data-theme-mode='dark'] .shop-page .el-input-group__append {
+  background-color: #2a2a2a;
+  border-color: #4a4a4a;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .shop-page .el-button--primary {
+  border-color: var(--el-color-primary, #409eff);
+}
+
+/* 覆盖暗色主题下输入框的高亮描边，避免出现 #f56c6c 红框 */
+html[data-theme-mode='dark'] .shop-page .el-input__wrapper.is-focus,
+html[data-theme-mode='dark'] .shop-page .el-input__wrapper:hover {
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-theme-mode='dark'] .shop-page .search-input .el-input-group__append {
+  border-left-color: #4a4a4a;
+}
+
+/* 其它页面的暗色主题通用样式 */
+
+/* 登录 / 注册页 */
+html[data-theme-mode='dark'] .login-page,
+html[data-theme-mode='dark'] .register-page {
+  background-color: #121212;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .login-page .right-panel,
+html[data-theme-mode='dark'] .register-page .right-panel {
+  background-color: #181818;
+}
+
+html[data-theme-mode='dark'] .login-page .login-container,
+html[data-theme-mode='dark'] .register-page .register-container {
+  background-color: #1f1f1f;
+  border-color: #303030;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme-mode='dark'] .login-page h2,
+html[data-theme-mode='dark'] .register-page h2,
+html[data-theme-mode='dark'] .login-page label,
+html[data-theme-mode='dark'] .register-page label {
+  color: #f0f0f0;
+}
+
+html[data-theme-mode='dark'] .login-page .bottom-nav,
+html[data-theme-mode='dark'] .register-page .bottom-nav {
+  color: #bbb;
+}
+
+/* 订单页 */
+html[data-theme-mode='dark'] .order-page {
+  background: radial-gradient(circle at top, #1f1f1f 0%, #121212 60%);
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .order-page .page-header {
+  background-color: transparent !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme-mode='dark'] .order-page .order-tabs,
+html[data-theme-mode='dark'] .order-page .order-card {
+  background-color: #1f1f1f;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme-mode='dark'] .order-page .order-header {
+  background-color: #252525;
+  border-bottom-color: #333;
+}
+
+/* 提高订单界面的对比度 */
+html[data-theme-mode='dark'] .order-page .order-list {
+  color: #e8e8e8;
+}
+
+html[data-theme-mode='dark'] .order-page .order-card {
+  background-color: #202020;
+}
+
+html[data-theme-mode='dark'] .order-page .order-goods,
+html[data-theme-mode='dark'] .order-page .order-total,
+html[data-theme-mode='dark'] .order-page .order-actions {
+  background-color: #181818;
+  border-top-color: #333;
+}
+
+html[data-theme-mode='dark'] .order-page .goods-item {
+  border-bottom-color: #333;
+}
+
+html[data-theme-mode='dark'] .order-page .order-no,
+html[data-theme-mode='dark'] .order-page .goods-name,
+html[data-theme-mode='dark'] .order-page .detail-section h4 {
+  color: #f5f5f5;
+}
+
+html[data-theme-mode='dark'] .order-page .order-time,
+html[data-theme-mode='dark'] .order-page .goods-id,
+html[data-theme-mode='dark'] .order-page .goods-count {
+  color: #c0c0c0;
+}
+
+html[data-theme-mode='dark'] .order-page .order-total span {
+  color: #f0f0f0;
+}
+
+/* 订单详情 / 支付弹窗 */
+html[data-theme-mode='dark'] .order-page .el-dialog,
+html[data-theme-mode='dark'] .order-page .el-dialog__body {
+  background-color: #1f1f1f;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .order-page .pay-amount {
+  background-color: #222;
+}
+
+/* 订单页 Tab 标签在暗色主题下的文字对比度 */
+html[data-theme-mode='dark'] .order-page .order-tabs :deep(.el-tabs__item) {
+  color: #c0c0c0 !important;
+}
+
+html[data-theme-mode='dark'] .order-page .order-tabs :deep(.el-tabs__item.is-active) {
+  color: #ffffff !important;
+}
+
+/* 列表页 */
+html[data-theme-mode='dark'] .list-page {
+  background-color: #181818;
+}
+
+html[data-theme-mode='dark'] .list-page .fixed-header {
+  background-color: transparent !important;
+}
+
+html[data-theme-mode='dark'] .list-page .shortcut {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme-mode='dark'] .list-page .search-section,
+html[data-theme-mode='dark'] .list-page .result-info,
+html[data-theme-mode='dark'] .list-page .pagination-wrapper,
+html[data-theme-mode='dark'] .list-page .footer {
+  background-color: #1f1f1f;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme-mode='dark'] .list-page .book-card,
+html[data-theme-mode='dark'] .list-page .detail-image,
+html[data-theme-mode='dark'] .list-page .comment-form {
+  background-color: #242424;
+}
+
+html[data-theme-mode='dark'] .list-page .book-title,
+html[data-theme-mode='dark'] .list-page .detail-title {
+  color: #f0f0f0;
+}
+
+/* 列表页底部分页控件暗色样式 */
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-pagination button,
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-pagination .el-pager li {
+  background-color: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-pagination .el-pager li.is-active {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+  color: #ffffff;
+}
+
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-pagination button.is-disabled {
+  background-color: #1f1f1f;
+  color: #555555;
+}
+
+/* page-size 下拉触发和跳转输入框 */
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-select .el-input__wrapper,
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-pagination__editor .el-input__wrapper {
+  background-color: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #e5e5e5;
+  box-shadow: none;
+}
+
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-pagination__editor .el-input__inner {
+  color: #e5e5e5;
+}
+
+/* 列表页搜索栏三栏控件在暗色主题下的输入/下拉样式 */
+html[data-theme-mode='dark'] .list-page .search-section .el-input__wrapper,
+html[data-theme-mode='dark'] .list-page .search-section .el-select .el-input__wrapper {
+  background-color: #2a2a2a;
+  border-color: #4a4a4a;
+  color: #e5e5e5;
+  box-shadow: none;
+}
+
+html[data-theme-mode='dark'] .list-page .search-section .el-input__inner {
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .list-page .search-section .el-input__prefix,
+html[data-theme-mode='dark'] .list-page .search-section .el-input__suffix,
+html[data-theme-mode='dark'] .list-page .search-section .el-input__icon {
+  color: #b0b0b0;
+}
+
+/* 选择分类触发框在聚焦/悬浮时保持暗色，不出现亮色/红色描边 */
+html[data-theme-mode='dark'] .list-page .search-section .el-select .el-input.is-focus .el-input__wrapper,
+html[data-theme-mode='dark'] .list-page .search-section .el-select .el-input.is-focus:hover .el-input__wrapper,
+html[data-theme-mode='dark'] .list-page .search-section .el-select .el-input:hover .el-input__wrapper {
+  background-color: #2a2a2a;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+/* placeholder 文字在暗色模式下略变灰，避免看起来太亮 */
+html[data-theme-mode='dark'] .list-page .search-section .el-input__inner::placeholder {
+  color: #888888;
+}
+
+/* 将控制台中调好的 el-select__wrapper 暗色样式作用到列表页（搜索栏 + 分页） */
+html[data-theme-mode='dark'] .list-page .search-section .el-select__wrapper,
+html[data-theme-mode='dark'] .list-page .pagination-wrapper .el-select__wrapper {
+  align-items: center;
+  background-color: #2a2a2a;
+  border-radius: var(--el-border-radius-base);
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  gap: 6px;
+  line-height: 24px;
+  min-height: 32px;
+  padding: 4px 12px;
+  position: relative;
+  text-align: left;
+  transform: translateZ(0);
+  transition: var(--el-transition-duration);
+  box-shadow: none;
+}
+
+html[data-theme-mode='dark'] .el-card {
+    --el-card-border-color: rgba(0, 32, 81, 0.313);
+    --el-card-border-radius: 4px;
+    --el-card-padding: 20px;
+    --el-card-bg-color: var(--el-fill-color-blank);
+    background-color: var(--el-card-bg-color);
+    border: 1px solid var(--el-card-border-color);
+    border-radius: var(--el-card-border-radius);
+    color: var(--el-text-color-primary);
+    overflow: hidden;
+    transition: var(--el-transition-duration);
+}
+
+
+/* 列表页“选择分类”下拉面板在暗色主题下 */
+html[data-theme-mode='dark'] .el-select-dropdown {
+  background-color: #1f1f1f;
+  border-color: #3a3a3a;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .el-select-dropdown__item {
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .el-select-dropdown__item.hover,
+html[data-theme-mode='dark'] .el-select-dropdown__item:hover {
+  background-color: #2a2a2a;
+}
+
+/* 商品详情弹窗标题在暗色主题下提高对比度 */
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-title,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-title {
+  color: #ffffff;
+}
+
+html[data-theme-mode='dark'] .list-page .product-dialog .el-dialog__title,
+html[data-theme-mode='dark'] .shop-page .product-dialog .el-dialog__title {
+  color: #ffffff;
+}
+
+/* 列表页 & 商城页的商品详情弹窗在暗色主题下使用深色背景 */
+html[data-theme-mode='dark'] .list-page .el-dialog,
+html[data-theme-mode='dark'] .list-page .el-dialog__body,
+html[data-theme-mode='dark'] .list-page .product-dialog,
+html[data-theme-mode='dark'] .shop-page .el-dialog,
+html[data-theme-mode='dark'] .shop-page .el-dialog__body,
+html[data-theme-mode='dark'] .shop-page .product-dialog {
+  background-color: #1f1f1f;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-price,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-price {
+  background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
+}
+
+html[data-theme-mode='dark'] .list-page .product-dialog .comment-form,
+html[data-theme-mode='dark'] .shop-page .product-dialog .comment-form {
+  background-color: #202020;
+}
+
+/* 评论输入框本身暗色化（Element Plus 文本域） */
+html[data-theme-mode='dark'] .list-page .product-dialog .comment-form .el-textarea__inner,
+html[data-theme-mode='dark'] .shop-page .product-dialog .comment-form .el-textarea__inner {
+  background-color: #15151517;
+  border-color: #3a3a3a;
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .list-page .product-dialog .comment-form .el-input__count,
+html[data-theme-mode='dark'] .shop-page .product-dialog .comment-form .el-input__count {
+  color: #a0a0a0;
+  background-color: #151515;
+  border-radius: 4px;
+}
+
+/* 商品详情弹窗内数量计数器（el-input-number）暗色化 */
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-actions .el-input-number .el-input__wrapper,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-actions .el-input-number .el-input__wrapper {
+  background-color: #151515;
+  border-color: #3a3a3a;
+  box-shadow: none;
+}
+
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-actions .el-input-number .el-input__inner,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-actions .el-input-number .el-input__inner {
+  color: #e5e5e5;
+}
+
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-actions .el-input-number .el-icon,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-actions .el-input-number .el-icon {
+  color: #e5e5e5;
+}
+
+/* 计数器左右加减按钮背景也调暗 */
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-actions .el-input-number__decrease,
+html[data-theme-mode='dark'] .list-page .product-dialog .detail-actions .el-input-number__increase,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-actions .el-input-number__decrease,
+html[data-theme-mode='dark'] .shop-page .product-dialog .detail-actions .el-input-number__increase {
+  background-color: #151515;
+  border-color: #3a3a3a;
+}
+
+/* 个人中心 / 设置页 */
+html[data-theme-mode='dark'] .profile-page,
+html[data-theme-mode='dark'] .settings-page {
+  background-color: #121212;
+}
+
+html[data-theme-mode='dark'] .profile-page .card,
+html[data-theme-mode='dark'] .settings-page .card {
+  background-color: #1f1f1f;
+  border-color: #303030;
+}
+
+/* 后台管理页 */
+html[data-theme-mode='dark'] .dashboard-page {
+  background: radial-gradient(circle at top, #1f1f1f 0%, #111 60%);
+}
+
+html[data-theme-mode='dark'] .dashboard-page header {
+  background-color: transparent !important;
+}
+
+html[data-theme-mode='dark'] .dashboard-page .bg-white {
+  background-color: #1f1f1f !important;
+}
+
+html[data-theme-mode='dark'] .dashboard-page .el-card {
+  background-color: #1f1f1f;
+  border-color: #303030;
+}
+
+/* 暗色主题下统一按钮底色为暗色 */
+html[data-theme-mode='dark'] .el-button {
+  background-color: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #eaeaea !important;
+}
+
+html[data-theme-mode='dark'] .el-button.is-plain {
+  background-color: #1f1f1f !important;
+  border-color: #444 !important;
+  color: #eaeaea !important;
+}
+
+/* 保留不同类型按钮的主题色文字 */
+html[data-theme-mode='dark'] .el-button.el-button--primary {
+  color: var(--el-color-primary, #409eff) !important;
+}
+
+html[data-theme-mode='dark'] .el-button.el-button--success {
+  color: #67c23a !important;
+}
+
+html[data-theme-mode='dark'] .el-button.el-button--warning {
+  color: #e6a23c !important;
+}
+
+html[data-theme-mode='dark'] .el-button.el-button--danger {
+  color: #f56c6c !important;
+}
+
+/* 首页搜索按钮在暗色主题下使用透明背景，不受全局按钮底色影响 */
+html[data-theme-mode='dark'] .shop-page .search-input .el-input-group__append .el-button {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+
+/* 订单页面字体颜色对比度 */
+html[data-theme-mode='dark'] .el-tabs__item {
+    align-items: center;
+    box-sizing: border-box;
+    color: #c2cde1;
+    display: flex;
+    font-size: var(--el-font-size-base);
+    font-weight: 500;
+    height: var(--el-tabs-header-height);
+    justify-content: center;
+    list-style: none;
+    padding: 0 20px;
+    position: relative;
+}
+
+html[data-theme-mode='dark'] .header-left h1[data-v-81604f40] {
+    font-size: 20px;
+    font-weight: 600;
+    color: #c2cde1;
+    margin: 0;
+}
