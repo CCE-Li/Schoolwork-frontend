@@ -142,6 +142,149 @@ const handleChangePassword = async () => {
 const backToShop = () => {
   router.push('/shop')
 }
+
+// 跳转到售后政策页面
+const goToAfterSalesPolicy = () => {
+  router.push('/policy/after-sales')
+}
+
+// 收藏相关
+const favorites = ref([
+  {
+    id: 1,
+    title: 'Vue.js设计与实现',
+    price: '99.00',
+    image: new URL('@/assets/images/goods1.png', import.meta.url).href
+  },
+  {
+    id: 2,
+    title: 'JavaScript高级程序设计',
+    price: '129.00',
+    image: new URL('@/assets/images/goods2.png', import.meta.url).href
+  },
+  {
+    id: 3,
+    title: '你不知道的JavaScript',
+    price: '89.00',
+    image: new URL('@/assets/images/goods3.png', import.meta.url).href
+  },
+  {
+    id: 4,
+    title: 'React进阶之路',
+    price: '79.00',
+    image: new URL('@/assets/images/goods4.png', import.meta.url).href
+  }
+])
+
+const removeFromFavorites = (item) => {
+  ElMessageBox.confirm(`确定要从收藏中移除《${item.title}》吗？`, '确认操作', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    favorites.value = favorites.value.filter(fav => fav.id !== item.id)
+    ElMessage.success('已从收藏中移除')
+  }).catch(() => {
+    // 用户取消操作
+  })
+}
+
+const clearFavorites = () => {
+  ElMessageBox.confirm('确定要清空所有收藏吗？', '确认操作', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    favorites.value = []
+    ElMessage.success('收藏已清空')
+  }).catch(() => {
+    // 用户取消操作
+  })
+}
+
+// 浏览记录相关
+const history = ref([
+  {
+    id: 5,
+    title: '深入浅出Node.js',
+    price: '95.00',
+    image: new URL('@/assets/images/goods5.png', import.meta.url).href
+  },
+  {
+    id: 6,
+    title: 'CSS世界',
+    price: '79.00',
+    image: new URL('@/assets/images/goods6.png', import.meta.url).href
+  },
+  {
+    id: 7,
+    title: '前端架构：从入门到微前端',
+    price: '69.00',
+    image: new URL('@/assets/images/goods7.png', import.meta.url).href
+  },
+  {
+    id: 8,
+    title: 'Web性能权威指南',
+    price: '85.00',
+    image: new URL('@/assets/images/goods8.png', import.meta.url).href
+  }
+])
+
+const clearHistory = () => {
+  ElMessageBox.confirm('确定要清空所有浏览记录吗？', '确认操作', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    history.value = []
+    ElMessage.success('浏览记录已清空')
+  }).catch(() => {
+    // 用户取消操作
+  })
+}
+
+const viewProduct = (item) => {
+  ElMessage.info(`查看商品《${item.title}》详情`)
+  // 这里可以跳转到商品详情页
+}
+
+// 猜你喜欢相关
+const recommendations = ref([
+  {
+    id: 9,
+    title: '算法导论',
+    price: '128.00',
+    image: new URL('@/assets/images/goods1.png', import.meta.url).href
+  },
+  {
+    id: 10,
+    title: '设计模式之禅',
+    price: '99.00',
+    image: new URL('@/assets/images/goods2.png', import.meta.url).href
+  },
+  {
+    id: 11,
+    title: '重构：改善既有代码的设计',
+    price: '89.00',
+    image: new URL('@/assets/images/goods3.png', import.meta.url).href
+  },
+  {
+    id: 12,
+    title: '代码大全',
+    price: '108.00',
+    image: new URL('@/assets/images/goods4.png', import.meta.url).href
+  }
+])
+
+// 初始化数据
+onMounted(() => {
+  // 实际项目中这里会调用API获取用户信息
+  profileForm.name = localStorage.getItem('username') || '用户'
+  profileForm.email = 'user@example.com'
+  profileForm.phone = '13800138000'
+  profileForm.address = '北京市朝阳区某某街道'
+  profileForm.prefer = '编程技术,计算机科学'
+})
 </script>
 
 <style scoped>

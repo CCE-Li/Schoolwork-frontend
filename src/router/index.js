@@ -92,7 +92,7 @@ const router = createRouter({
     {
       path: '/user/orders',
       name: 'user-orders',
-      component: () => import('../views/UserOrderView.vue'),
+      component: () => import('../views/MyOrdersView.vue'),
       meta: { requiresAuth: true }
     },
     // 用户个人设置页面
@@ -116,11 +116,37 @@ const router = createRouter({
       component: () => import('../views/AIChatView.vue'),
       meta: { requiresAuth: true }
     },
+    // 用户设置页面
+    {
+      path: '/user/settings',
+      name: 'user-settings',
+      component: () => import('../views/UserSettingsView.vue'),
+      meta: { requiresAuth: true }
+    },
     // 404页面路由配置
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: NotFound
+    },
+    //购物车界面路由配置
+    {
+      path:'/cart',
+      name:'cart',
+      component: () => import('../views/CartView.vue')
+    },
+    // 取消订单界面路由配置
+    {
+      path: '/order/:id/cancel',
+      name: 'cancel-order',
+      component: () => import('../views/CancelOrderView.vue'),
+      meta: { requiresAuth: true }
+    },
+    // 售后政策界面路由配置
+    {
+      path: '/policy/after-sales',
+      name: 'after-sales-policy',
+      component: () => import('../views/AfterSalesPolicyView.vue')
     }
   ],
 })

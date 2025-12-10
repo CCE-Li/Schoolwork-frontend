@@ -19,6 +19,9 @@
                 <el-dropdown-item command="favourite">
                   <el-icon><Document /></el-icon>我的收藏
                 </el-dropdown-item>
+                <el-dropdown-item command="settings">
+                  <el-icon><Setting /></el-icon>设置
+                </el-dropdown-item>
                 <el-dropdown-item command="switch" divided>
                   <el-icon><Switch /></el-icon>切换账号
                 </el-dropdown-item>
@@ -434,6 +437,9 @@ const handleUserCommand = (command) => {
     case 'profile':
       router.push('/user/profile')
       break
+    case 'settings':
+      router.push('/user/settings')
+      break
     case 'favourite':
       router.push('/user/favorite')
       break
@@ -716,6 +722,11 @@ const goToOrders = () => {
   router.push('/user/orders')
 }
 
+// 跳转到购物车
+const goToCart = () => {
+  router.push('/cart')
+}
+
 // 加入购物车
 const addToCart = () => {
   ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
@@ -772,7 +783,12 @@ const helpItems = ref([
   { title: '购物指南', items: ['购物流程', '支付方式', '售后规则'] },
   { title: '配送方式', items: ['配送范围', '配送时间'] },
   { title: '关于我们', items: ['联系我们', '问题反馈'] },
-  { title: '售后服务', items: ['售后政策', '退换说明', '取消订单'] },
+  { title: '售后服务', items: [
+      { text: '售后政策', link: '/policy/after-sales' },
+      '退换说明',
+      '取消订单'
+    ]
+  },
   { title: '服务热线', items: ['客服电话 400-0000-000', '人工客服 周一至周日8：00-18：00', { text: 'AI客服', link: '#' }] }
 ])
 

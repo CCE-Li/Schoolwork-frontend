@@ -1,5 +1,5 @@
 <template>
-  <div class="order-page">
+  <div class="my-orders-page">
     <!-- 顶部导航 -->
     <header class="page-header">
       <div class="header-content">
@@ -17,21 +17,21 @@
 
     <!-- 主体内容 -->
     <main class="page-main">
-      <div class="order-container">
+      <div class="orders-container">
         <!-- 订单状态筛选 -->
-        <div class="order-tabs">
+        <div class="orders-tabs">
           <el-tabs v-model="activeStatus" @tab-change="handleTabChange">
             <el-tab-pane label="全部订单" name="all" />
             <el-tab-pane label="待支付" name="0" />
-            <el-tab-pane label="已支付" name="1" />
-            <el-tab-pane label="已发货" name="2" />
+            <el-tab-pane label="待发货" name="1" />
+            <el-tab-pane label="待收货" name="2" />
             <el-tab-pane label="已完成" name="3" />
             <el-tab-pane label="已取消" name="4" />
           </el-tabs>
         </div>
 
         <!-- 订单列表 -->
-        <div class="order-list" v-loading="loading">
+        <div class="orders-list" v-loading="loading">
           <template v-if="orderList.length > 0">
             <div class="order-card" v-for="order in orderList" :key="order.oid">
               <!-- 订单头部 -->
@@ -100,7 +100,9 @@
           </template>
 
           <!-- 空状态 -->
-          <el-empty v-else description="暂无订单" />
+          <el-empty v-else description="暂无订单">
+            <el-button type="primary" @click="goToShop">去逛逛</el-button>
+          </el-empty>
         </div>
 
         <!-- 分页 -->
@@ -268,6 +270,7 @@ const fetchOrderList = async () => {
     }
   } catch (error) {
     console.error('获取订单列表失败:', error)
+    ElMessage.error('获取订单列表失败')
   } finally {
     loading.value = false
   }
@@ -317,8 +320,8 @@ const calcTotalPrice = (order) => {
 const getStatusText = (status) => {
   const statusMap = {
     0: '待支付',
-    1: '已支付',
-    2: '已发货',
+    1: '待发货',
+    2: '待收货',
     3: '已完成',
     4: '已取消'
   }
@@ -329,8 +332,8 @@ const getStatusText = (status) => {
 const getStatusType = (status) => {
   const typeMap = {
     0: 'warning',   // 待支付 - 警告色
-    1: 'primary',   // 已支付 - 主色
-    2: 'info',      // 已发货 - 信息色
+    1: 'primary',   // 待发货 - 主色
+    2: 'info',      // 待收货 - 信息色
     3: 'success',   // 已完成 - 成功色
     4: 'danger'     // 已取消 - 危险色
   }
@@ -368,6 +371,7 @@ const confirmPay = async () => {
     }
   } catch (error) {
     console.error('支付失败:', error)
+    ElMessage.error('支付失败，请稍后重试')
   }
 }
 
@@ -395,9 +399,14 @@ const handleConfirm = async (order) => {
   }
 }
 
+// 返回商店
+const goToShop = () => {
+  router.push('/shop')
+}
+
 // 返回
 const goBack = () => {
-  router.push('/shop')
+  router.go(-1)
 }
 
 // 初始化
@@ -412,7 +421,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.order-page {
+.my-orders-page {
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -462,13 +471,13 @@ onMounted(() => {
   padding: 24px;
 }
 
-.order-container {
+.orders-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
 /* 标签页 */
-.order-tabs {
+.orders-tabs {
   background: #fff;
   border-radius: 8px;
   padding: 0 20px;
@@ -476,11 +485,11 @@ onMounted(() => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-.order-tabs :deep(.el-tabs__header) {
+.orders-tabs :deep(.el-tabs__header) {
   margin: 0;
 }
 
-.order-tabs :deep(.el-tabs__item) {
+.orders-tabs :deep(.el-tabs__item) {
   font-size: 15px;
   padding: 0 24px;
   height: 50px;
@@ -488,7 +497,7 @@ onMounted(() => {
 }
 
 /* 订单列表 */
-.order-list {
+.orders-list {
   min-height: 300px;
 }
 
@@ -547,6 +556,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .goods-id {
@@ -562,6 +572,7 @@ onMounted(() => {
   font-size: 14px;
   color: #303133;
   font-weight: 500;
+  min-width: 100px;
 }
 
 .goods-price {
@@ -740,5 +751,40 @@ onMounted(() => {
 
 .pay-icon.balance {
   background: #ff9500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 12px 16px;
+  }
+  
+  .page-main {
+    padding: 16px;
+  }
+  
+  .orders-container {
+    padding: 0;
+  }
+  
+  .goods-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .goods-name {
+    width: 100%;
+  }
+  
+  .order-total {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  
+  .order-actions {
+    flex-wrap: wrap;
+  }
 }
 </style>
