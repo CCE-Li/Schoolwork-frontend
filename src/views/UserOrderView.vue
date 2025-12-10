@@ -81,7 +81,7 @@
                 </el-button>
                 <el-button
                   v-if="order.status === 0"
-                  @click="handleCancel(order)"
+                  @click="goToCancelOrder(order)"
                 >
                   取消订单
                 </el-button>
@@ -371,23 +371,9 @@ const confirmPay = async () => {
   }
 }
 
-// 取消订单
-const handleCancel = async (order) => {
-  try {
-    await ElMessageBox.confirm('确定要取消该订单吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-
-    const res = await cancelOrder(order.oid)
-    if (res.data.code === 200) {
-      ElMessage.success('订单已取消')
-      fetchOrderList()
-    }
-  } catch {
-    // 用户取消
-  }
+// 跳转到取消订单页面
+const goToCancelOrder = (order) => {
+  router.push(`/order/${order.oid}/cancel`)
 }
 
 // 确认收货

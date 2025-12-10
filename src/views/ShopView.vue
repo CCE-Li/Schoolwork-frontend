@@ -624,6 +624,11 @@ const goToOrders = () => {
   router.push('/user/orders')
 }
 
+// 跳转到购物车
+const goToCart = () => {
+  router.push('/cart')
+}
+
 // 加入购物车
 const addToCart = () => {
   ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)

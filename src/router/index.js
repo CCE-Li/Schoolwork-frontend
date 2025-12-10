@@ -113,6 +113,13 @@ const router = createRouter({
       path:'/cart',
       name:'cart',
       component: () => import('../views/CartView.vue')
+    },
+    // 取消订单界面路由配置
+    {
+      path: '/order/:id/cancel',
+      name: 'cancel-order',
+      component: () => import('../views/CancelOrderView.vue'),
+      meta: { requiresAuth: true }
     }
   ],
 })

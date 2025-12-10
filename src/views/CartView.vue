@@ -13,7 +13,7 @@
         <!-- 购物车为空时显示 -->
         <div v-if="cartItems.length === 0" class="cart-empty">
           <el-empty description="购物车为空">
-            <el-button type="primary" @click="$router.push('/shop')">去逛逛</el-button>
+            <el-button type="primary" @click="goToShop">去逛逛</el-button>
           </el-empty>
         </div>
 
@@ -254,7 +254,12 @@ export default {
     // 结算
     const checkout = () => {
       ElMessage.info('跳转到结算页面')
-      router.push('/checkout')
+      router.push('/user/orders')
+    }
+
+    // 跳转到商店
+    const goToShop = () => {
+      router.push('/shop')
     }
 
     return {
@@ -269,6 +274,7 @@ export default {
       moveToFavorites,
       deleteSelected,
       checkout,
+      goToShop,
       Delete
     }
   }
