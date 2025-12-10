@@ -166,6 +166,10 @@
               <el-table-column prop="content" label="具体内容" />
               <el-table-column prop="purpose" label="用途说明" />
             </el-table>
+            
+            <div class="policy-link">
+              <el-button type="primary" link @click="goToAfterSalesPolicy">查看售后政策</el-button>
+            </div>
           </el-card>
           
           <el-card shadow="hover" class="setting-card">
@@ -255,6 +259,11 @@ import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+// 跳转到售后政策页面
+const goToAfterSalesPolicy = () => {
+  router.push('/policy/after-sales')
+}
 
 const activeTab = ref('personalization')
 const darkMode = ref(false)
@@ -535,6 +544,11 @@ onMounted(() => {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+.policy-link {
+  margin-top: 20px;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

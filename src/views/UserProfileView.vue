@@ -250,6 +250,11 @@ const backToShop = () => {
   router.push('/shop')
 }
 
+// 跳转到售后政策页面
+const goToAfterSalesPolicy = () => {
+  router.push('/policy/after-sales')
+}
+
 // 收藏相关
 const favorites = ref([
   {

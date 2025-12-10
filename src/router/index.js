@@ -85,7 +85,7 @@ const router = createRouter({
     {
       path: '/user/orders',
       name: 'user-orders',
-      component: () => import('../views/UserOrderView.vue'),
+      component: () => import('../views/MyOrdersView.vue'),
       meta: { requiresAuth: true }
     },
     // 用户个人设置页面
@@ -120,6 +120,12 @@ const router = createRouter({
       name: 'cancel-order',
       component: () => import('../views/CancelOrderView.vue'),
       meta: { requiresAuth: true }
+    },
+    // 售后政策界面路由配置
+    {
+      path: '/policy/after-sales',
+      name: 'after-sales-policy',
+      component: () => import('../views/AfterSalesPolicyView.vue')
     }
   ],
 })
