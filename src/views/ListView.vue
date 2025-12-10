@@ -9,7 +9,7 @@
               <el-icon><HomeFilled /></el-icon>返回首页
             </el-button>
             <el-divider direction="vertical" />
-            <el-button text class="nav-btn">
+            <el-button text class="nav-btn" @click="$router.push('/user/profile')">
               <el-icon><User /></el-icon>个人中心
             </el-button>
             <el-divider direction="vertical" />
