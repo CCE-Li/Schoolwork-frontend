@@ -16,6 +16,9 @@
                 <el-dropdown-item command="profile">
                   <el-icon><User /></el-icon>个人中心
                 </el-dropdown-item>
+                <el-dropdown-item command="settings">
+                  <el-icon><Setting /></el-icon>设置
+                </el-dropdown-item>
                 <el-dropdown-item command="switch" divided>
                   <el-icon><Switch /></el-icon>切换账号
                 </el-dropdown-item>
@@ -398,6 +401,9 @@ const handleUserCommand = (command) => {
   switch (command) {
     case 'profile':
       router.push('/user/profile')
+      break
+    case 'settings':
+      router.push('/user/settings')
       break
     case 'switch':
       // 切换账号：清除当前登录信息，跳转到登录页

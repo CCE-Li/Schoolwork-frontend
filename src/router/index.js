@@ -95,6 +95,13 @@ const router = createRouter({
       component: () => import('../views/UserProfileView.vue'),
       meta: { requiresAuth: true }
     },
+    // 用户设置页面
+    {
+      path: '/user/settings',
+      name: 'user-settings',
+      component: () => import('../views/UserSettingsView.vue'),
+      meta: { requiresAuth: true }
+    },
     // 404页面路由配置
     {
       path: '/:pathMatch(.*)*',
