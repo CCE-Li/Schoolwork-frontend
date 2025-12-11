@@ -3,6 +3,7 @@ import { ElMessage } from 'element-plus'
 // 检查组件是否正确导入
 import RegisterView from '../views/RegisterView.vue'
 import ShopView from '../views/ShopView.vue'
+import CartView from '../views/CartView.vue'
 import NotFound from '../views/NotFound.vue'
 
 const router = createRouter({
@@ -38,6 +39,13 @@ const router = createRouter({
       path: '/shop',
       name: 'shop',
       component: ShopView,
+      meta: { requiresAuth: true }
+    },
+    // 购物车页面
+    {
+      path: '/cart',
+      name: 'cart',
+      component: CartView,
       meta: { requiresAuth: true }
     },
     // 图书列表/搜索页面路由配置

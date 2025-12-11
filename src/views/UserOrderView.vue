@@ -33,12 +33,12 @@
         <!-- 订单列表 -->
         <div class="order-list" v-loading="loading">
           <template v-if="orderList.length > 0">
-            <div class="order-card" v-for="order in orderList" :key="order.oid">
+            <div class="order-card" v-for="order in orderList" :key="order.orderNo || order.oid">
               <!-- 订单头部 -->
               <div class="order-header">
                 <div class="order-info">
-                  <span class="order-no">订单号：{{ order.oid }}</span>
-                  <span class="order-time">{{ formatDate(order.create_time) }}</span>
+                  <span class="order-no">订单号：{{ order.orderNo || order.oid }}</span>
+                  <span class="order-time">{{ formatDate(order.createTime || order.create_time) }}</span>
                 </div>
                 <el-tag :type="getStatusType(order.status)" size="small">
                   {{ getStatusText(order.status) }}
@@ -50,20 +50,20 @@
                 <div class="goods-list">
                   <div
                     class="goods-item"
-                    v-for="(book, index) in parseBooks(order.books)"
+                    v-for="(book, index) in (order.booksWithInfo || parseBooks(order.books))"
                     :key="index"
                   >
                     <div class="goods-info">
-                      <span class="goods-id">ID: {{ book.book_id }}</span>
+                      <span class="goods-id">ID: {{ book.bid || book.book_id }}</span>
                       <span class="goods-name">{{ book.name }}</span>
                       <span class="goods-price">￥{{ (book.price || 0).toFixed(2) }}</span>
-                      <span class="goods-count">x{{ book.count }}</span>
-                      <span class="goods-subtotal">小计：￥{{ ((book.price || 0) * (book.count || 0)).toFixed(2) }}</span>
+                      <span class="goods-count">x{{ book.number || book.count }}</span>
+                      <span class="goods-subtotal">小计：￥{{ ((book.price || 0) * (book.number || book.count || 0)).toFixed(2) }}</span>
                     </div>
                   </div>
                 </div>
                 <div class="order-total">
-                  <span>共 {{ getTotalCount(order.books) }} 件商品</span>
+                  <span>共 {{ getTotalCount(order.booksWithInfo || order.books) }} 件商品</span>
                   <span class="total-price">
                     合计：<em>￥{{ calcTotalPrice(order) }}</em>
                   </span>
@@ -126,7 +126,7 @@
           <div class="detail-grid">
             <div class="detail-item">
               <span class="label">订单号：</span>
-              <span class="value">{{ currentOrder.oid }}</span>
+              <span class="value">{{ currentOrder.orderNo || currentOrder.oid }}</span>
             </div>
             <div class="detail-item">
               <span class="label">订单状态：</span>
@@ -136,7 +136,7 @@
             </div>
             <div class="detail-item">
               <span class="label">下单时间：</span>
-              <span class="value">{{ formatDate(currentOrder.create_time) }}</span>
+              <span class="value">{{ formatDate(currentOrder.createTime || currentOrder.create_time) }}</span>
             </div>
             <div class="detail-item">
               <span class="label">订单金额：</span>
@@ -147,18 +147,26 @@
 
         <div class="detail-section">
           <h4>商品信息</h4>
-          <el-table :data="parseBooks(currentOrder.books)" size="small" border>
-            <el-table-column prop="book_id" label="图书ID" width="80" />
+          <el-table :data="currentOrder.booksWithInfo || parseBooks(currentOrder.books)" size="small" border>
+            <el-table-column label="图书ID" width="80">
+              <template #default="{ row }">
+                {{ row.bid || row.book_id }}
+              </template>
+            </el-table-column>
             <el-table-column prop="name" label="商品名称" min-width="180" />
             <el-table-column prop="price" label="单价" width="100">
               <template #default="{ row }">
                 ￥{{ (row.price || 0).toFixed(2) }}
               </template>
             </el-table-column>
-            <el-table-column prop="count" label="数量" width="80" align="center" />
+            <el-table-column label="数量" width="80" align="center">
+              <template #default="{ row }">
+                {{ row.number || row.count }}
+              </template>
+            </el-table-column>
             <el-table-column label="小计" width="110">
               <template #default="{ row }">
-                <span class="subtotal">￥{{ ((row.price || 0) * (row.count || 0)).toFixed(2) }}</span>
+                <span class="subtotal">￥{{ ((row.price || 0) * (row.number || row.count || 0)).toFixed(2) }}</span>
               </template>
             </el-table-column>
           </el-table>
@@ -214,6 +222,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { getUserOrderList, cancelOrder, confirmReceipt, payOrder } from '@/api/order'
+import { getBookDetail } from '@/api/book'
 
 const router = useRouter()
 const route = useRoute()
@@ -239,6 +248,24 @@ const payVisible = ref(false)
 const currentOrder = ref(null)
 const paymentMethod = ref('alipay')
 
+// 图书信息缓存
+const bookCache = ref({})
+
+// 获取图书详情并缓存
+const fetchBookInfo = async (bid) => {
+  if (bookCache.value[bid]) return bookCache.value[bid]
+  try {
+    const res = await getBookDetail(bid)
+    if (res.data.code === 200 && res.data.data) {
+      bookCache.value[bid] = res.data.data
+      return res.data.data
+    }
+  } catch (e) {
+    console.error('获取图书信息失败:', e)
+  }
+  return null
+}
+
 // 获取订单列表
 const fetchOrderList = async () => {
   loading.value = true
@@ -254,17 +281,49 @@ const fetchOrderList = async () => {
     const res = await getUserOrderList(params)
     if (res.data.code === 200) {
       const data = res.data.data
+      let orders = []
       // 兼容数组或分页对象
       if (Array.isArray(data)) {
-        orderList.value = data
+        orders = data
         pagination.value.total = data.length
       } else if (data.records) {
-        orderList.value = data.records
+        orders = data.records
         pagination.value.total = data.total || data.records.length
       } else {
-        orderList.value = []
+        orders = []
         pagination.value.total = 0
       }
+
+      // 获取所有订单中的图书详情
+      const allBids = new Set()
+      orders.forEach(order => {
+        const books = parseBooks(order.books)
+        books.forEach(book => {
+          const bid = book.bid || book.book_id
+          if (bid) allBids.add(bid)
+        })
+      })
+
+      // 并行获取所有图书信息
+      await Promise.all([...allBids].map(bid => fetchBookInfo(bid)))
+
+      // 补充图书信息到订单中
+      orders.forEach(order => {
+        const books = parseBooks(order.books)
+        order.booksWithInfo = books.map(book => {
+          const bid = book.bid || book.book_id
+          const bookInfo = bookCache.value[bid] || {}
+          return {
+            ...book,
+            bid: bid,
+            name: book.name || bookInfo.title || `图书${bid}`,
+            price: book.price ?? bookInfo.price ?? 0,
+            number: book.number || book.count || 1
+          }
+        })
+      })
+
+      orderList.value = orders
     }
   } catch (error) {
     console.error('获取订单列表失败:', error)
@@ -298,18 +357,21 @@ const parseBooks = (books) => {
 // 获取商品总数
 const getTotalCount = (books) => {
   const list = parseBooks(books)
-  return list.reduce((sum, item) => sum + (item.count || 0), 0)
+  return list.reduce((sum, item) => sum + (item.number || item.count || 0), 0)
 }
 
 // 计算订单总价
 const calcTotalPrice = (order) => {
-  // 如果有 total_price 且大于0，直接使用
+  // 如果有 totalPrice 或 total_price 且大于0，直接使用
+  if (order.totalPrice && order.totalPrice > 0) {
+    return order.totalPrice.toFixed(2)
+  }
   if (order.total_price && order.total_price > 0) {
     return order.total_price.toFixed(2)
   }
   // 否则根据商品计算
   const list = parseBooks(order.books)
-  const total = list.reduce((sum, item) => sum + (item.price || 0) * (item.count || 0), 0)
+  const total = list.reduce((sum, item) => sum + (item.price || 0) * (item.number || item.count || 0), 0)
   return total.toFixed(2)
 }
 
@@ -360,7 +422,7 @@ const handlePay = (order) => {
 // 确认支付
 const confirmPay = async () => {
   try {
-    const res = await payOrder(currentOrder.value.oid, paymentMethod.value)
+    const res = await payOrder(currentOrder.value.orderNo || currentOrder.value.oid, paymentMethod.value)
     if (res.data.code === 200) {
       ElMessage.success('支付成功')
       payVisible.value = false
@@ -380,7 +442,7 @@ const handleCancel = async (order) => {
       type: 'warning'
     })
 
-    const res = await cancelOrder(order.oid)
+    const res = await cancelOrder(order.orderNo || order.oid)
     if (res.data.code === 200) {
       ElMessage.success('订单已取消')
       fetchOrderList()
@@ -399,7 +461,7 @@ const handleConfirm = async (order) => {
       type: 'info'
     })
 
-    const res = await confirmReceipt(order.oid)
+    const res = await confirmReceipt(order.orderNo || order.oid)
     if (res.data.code === 200) {
       ElMessage.success('已确认收货')
       fetchOrderList()

@@ -9,21 +9,21 @@
       <div v-for="(message, index) in messages" :key="index"
            :class="['message', message.role]">
         <div class="message-avatar">
-          <el-avatar :icon="message.role === 'user' ? 'User' : 'ChatDotRound'"></el-avatar>
+          <el-avatar :src="message.role === 'user' ? userAvatar : aiAvatar"></el-avatar>
         </div>
         <div class="message-content">
           <div class="message-role">{{ message.role === 'user' ? '你' : 'AI 助手' }}</div>
-          <div class="message-text" v-html="message.content"></div>
+          <div class="message-text" v-html="renderMarkdown(message.content)"></div>
         </div>
       </div>
       <div v-if="isLoading" class="message assistant">
         <div class="message-avatar">
-          <el-avatar icon="ChatDotRound"></el-avatar>
+          <el-avatar :src="aiAvatar"></el-avatar>
         </div>
         <div class="message-content">
           <div class="message-role">AI 助手</div>
           <div class="message-text">
-            <span v-html="currentResponse"></span>
+            <span v-html="renderMarkdown(currentResponse)"></span>
             <span class="typing-cursor">|</span>
           </div>
         </div>
@@ -39,6 +39,21 @@
         :disabled="isLoading"
         @keyup.enter.exact.prevent="sendMessage"
       ></el-input>
+
+      <div class="preset-questions" v-if="presetQuestions && presetQuestions.length">
+        <span class="preset-label">猜你想问：</span>
+        <el-space wrap>
+          <el-button
+            v-for="(q, idx) in presetQuestions"
+            :key="idx"
+            size="small"
+            @click="usePreset(q)"
+          >
+            {{ q }}
+          </el-button>
+        </el-space>
+      </div>
+
       <div class="input-actions">
         <el-button
           type="primary"
@@ -54,6 +69,10 @@
 </template>
 
 <script>
+import MarkdownIt from 'markdown-it'
+import userAvatarImg from '@/assets/images/85932h181p0.webp'
+import aiAvatarImg from '@/assets/images/eeb63d13e57c4e1ca73166fa66ac9ff4preview.jpeg~tplv-a9rns2rl98-downsize_watermark_1_5_b.png'
+
 export default {
   name: 'AIChatView',
   data() {
@@ -63,11 +82,50 @@ export default {
       isLoading: false,
       currentResponse: '',
       controller: null,
+      userAvatar: userAvatarImg,
+      aiAvatar: aiAvatarImg,
+      presetQuestions: [
+        '如何下单？可以一步一步教我吗？',
+        '帮我查一下我最新一笔订单的状态。',
+        '收到的书有破损/缺页，怎么申请换货？',
+        '可以根据我最近买的书，给我推荐几本类似的书吗？'
+      ],
+      markdown: new MarkdownIt({
+        linkify: true,
+        breaks: true
+      })
     };
   },
+  mounted() {
+    // 仅当从首页「在线客服」入口进入时，显示一条欢迎消息
+    if (this.$route && this.$route.query && this.$route.query.from === 'shop') {
+      this.messages.push({
+        role: 'assistant',
+        content: '你好，我是 AI 客服助手，可以帮你解答下单、订单、购物车等相关问题，有什么想了解的可以直接问我~'
+      })
+      this.scrollToBottom()
+    }
+  },
+
   methods: {
     goBack() {
       this.$router.back();
+    },
+
+    usePreset(question) {
+      if (!question || this.isLoading) return;
+      this.userInput = question;
+      this.scrollToBottom();
+    },
+
+    renderMarkdown(content) {
+      if (!content) return ''
+      try {
+        return this.markdown.render(content)
+      } catch (e) {
+        console.error('Markdown 渲染失败:', e)
+        return content
+      }
     },
 
     async sendMessage() {

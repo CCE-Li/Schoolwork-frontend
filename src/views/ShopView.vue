@@ -93,8 +93,8 @@
         </div>
         <!-- 购物车 -->
         <div class="cart">
-          <el-badge :value="0" :max="99" class="cart-badge">
-            <el-button type="danger" plain>
+          <el-badge :value="cartCount" :max="99" class="cart-badge">
+            <el-button type="danger" plain @click="goToCart">
               <el-icon><ShoppingCart /></el-icon>
               购物车
             </el-button>
@@ -222,7 +222,7 @@
                   type="primary"
                   size="small"
                   class="add-cart-btn"
-                  @click.stop="addToCartDirect(item)"
+                  @click.stop="addToCart(item)"
                 >
                   <el-icon><ShoppingCart /></el-icon> 加入购物车
                 </el-button>
@@ -401,6 +401,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { createOrderDirectly } from '@/api/order'
 import { getBookList, getBookDetail, addBookComment } from '@/api/book'
 import { getUserFavourites, addFavourite, deleteFavourite } from '@/api/user'
+import { addToCart as addToCartApi, getCartList } from '@/api/cart'
 import {
   User,
   Document,
@@ -427,6 +428,29 @@ const router = useRouter()
 
 // 当前用户名
 const currentUsername = ref(localStorage.getItem('username') || '用户')
+const uid = localStorage.getItem('userId') || localStorage.getItem('uid')
+
+// 购物车数量
+const cartCount = ref(0)
+
+// 从后端初始化购物车数量
+const initCartCount = async () => {
+  try {
+    const res = await getCartList()
+    const body = res.data
+    let list = []
+    if (Array.isArray(body?.data)) {
+      list = body.data
+    } else if (Array.isArray(body)) {
+      list = body
+    } else if (Array.isArray(body?.data?.list)) {
+      list = body.data.list
+    }
+    cartCount.value = list.reduce((sum, item) => sum + Number(item.number || 0), 0)
+  } catch (e) {
+    console.error('初始化购物车数量失败:', e)
+  }
+}
 
 // 用户菜单处理
 const handleUserCommand = (command) => {
@@ -465,7 +489,7 @@ const goToSettings = () => {
 
 // 跳转到ai客服
 const gotoAIChat = () => {
-  router.push('/ai-chat')
+  router.push({ path: '/ai-chat', query: { from: 'shop' } })
 }
 
 // 搜索相关
@@ -716,14 +740,57 @@ const goToOrders = () => {
   router.push('/user/orders')
 }
 
+// 跳转到购物车
+const goToCart = () => {
+  router.push('/cart')
+}
+
 // 加入购物车
-const addToCart = () => {
-  ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
+const addToCart = async () => {
+  if (!currentProduct.value?.bid) {
+    ElMessage.warning('该商品暂不支持加入购物车')
+    return
+  }
+  try {
+    const res = await addToCartApi({
+      uid,
+      bid: currentProduct.value.bid,
+      number: quantity.value || 1
+    })
+    if (res.data && res.data.code === 200) {
+      ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
+      cartCount.value += Number(quantity.value || 1)
+    } else {
+      ElMessage.error(res.data?.message || '加入购物车失败')
+    }
+  } catch (e) {
+    console.error('加入购物车失败:', e)
+    ElMessage.error('加入购物车失败，请稍后重试')
+  }
 }
 
 // 直接加入购物车（不打开弹窗）
-const addToCartDirect = (product) => {
-  ElMessage.success(`已将《${product.title}》加入购物车`)
+const addToCartDirect = async (product) => {
+  if (!product?.bid) {
+    ElMessage.warning('该商品暂不支持加入购物车')
+    return
+  }
+  try {
+    const res = await addToCartApi({
+      uid,
+      bid: product.bid,
+      number: 1
+    })
+    if (res.data && res.data.code === 200) {
+      ElMessage.success(`已将《${product.title}》加入购物车`)
+      cartCount.value += 1
+    } else {
+      ElMessage.error(res.data?.message || '加入购物车失败')
+    }
+  } catch (e) {
+    console.error('加入购物车失败:', e)
+    ElMessage.error('加入购物车失败，请稍后重试')
+  }
 }
 
 // 发表评论
@@ -842,6 +909,7 @@ onMounted(() => {
     showRecommend.value = root.dataset.showRecommend !== '0'
   }
   loadFavourites()
+  initCartCount()
 })
 
 onUnmounted(() => {

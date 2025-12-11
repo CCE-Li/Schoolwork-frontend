@@ -57,14 +57,14 @@
             <el-table-column prop="id" label="ID" width="80" />
             <el-table-column prop="oid" label="订单号" width="180" />
             <el-table-column prop="uid" label="用户ID" width="120" />
-            <el-table-column prop="total_price" label="订单金额" width="120">
+            <el-table-column prop="totalPrice" label="订单金额" width="120">
               <template #default="{ row }">
-                ￥{{ row.total_price?.toFixed(2) }}
+                ￥{{ Number(row.totalPrice ?? row.total_price ?? row.total_Price ?? 0).toFixed(2) }}
               </template>
             </el-table-column>
-            <el-table-column prop="create_time" label="下单时间" width="180">
+            <el-table-column prop="createTime" label="下单时间" width="180">
               <template #default="{ row }">
-                {{ formatDate(row.create_time) }}
+                {{ formatDate(row.createTime ?? row.create_time ?? row.create_Time) }}
               </template>
             </el-table-column>
             <el-table-column prop="status" label="状态" width="100">
@@ -136,7 +136,9 @@
             </div>
             <div class="detail-item">
               <span class="label">订单金额：</span>
-              <span class="value price">￥{{ currentOrder.total_price?.toFixed(2) }}</span>
+              <span class="value price">
+                ￥{{ Number(currentOrder.totalPrice ?? currentOrder.total_price ?? currentOrder.total_Price ?? 0).toFixed(2) }}
+              </span>
             </div>
             <div class="detail-item">
               <span class="label">订单状态：</span>
@@ -146,7 +148,7 @@
             </div>
             <div class="detail-item">
               <span class="label">下单时间：</span>
-              <span class="value">{{ formatDate(currentOrder.create_time) }}</span>
+              <span class="value">{{ formatDate(currentOrder.createTime ?? currentOrder.create_time ?? currentOrder.create_Time) }}</span>
             </div>
           </div>
         </div>

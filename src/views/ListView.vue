@@ -13,7 +13,7 @@
               <el-icon><User /></el-icon>个人中心
             </el-button>
             <el-divider direction="vertical" />
-            <el-button text class="nav-btn">
+            <el-button text class="nav-btn" @click="$router.push('/cart')">
               <el-icon><ShoppingCart /></el-icon>购物车
             </el-button>
           </el-space>
@@ -328,9 +328,11 @@ import request from '@/utils/request'
 import { createOrderDirectly } from '@/api/order'
 import { getBookDetail, addBookComment } from '@/api/book'
 import { getUserFavourites, addFavourite, deleteFavourite } from '@/api/user'
+import { addToCart as addToCartApi } from '@/api/cart'
 
 const router = useRouter()
 const route = useRoute()
+const uid = localStorage.getItem('userId') || localStorage.getItem('uid')
 
 // 搜索参数
 const searchParams = reactive({
@@ -695,13 +697,49 @@ const handleBuyNow = async () => {
 }
 
 // 加入购物车（弹窗内）
-const handleAddToCart = () => {
-  ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
+const handleAddToCart = async () => {
+  if (!currentProduct.value?.bid) {
+    ElMessage.warning('该商品暂不支持加入购物车')
+    return
+  }
+  try {
+    const res = await addToCartApi({
+      uid,
+      bid: currentProduct.value.bid,
+      number: quantity.value || 1
+    })
+    if (res.data && res.data.code === 200) {
+      ElMessage.success(`已将 ${quantity.value} 本《${currentProduct.value.title}》加入购物车`)
+    } else {
+      ElMessage.error(res.data?.message || '加入购物车失败')
+    }
+  } catch (e) {
+    console.error('加入购物车失败:', e)
+    ElMessage.error('加入购物车失败，请稍后重试')
+  }
 }
 
 // 加入购物车（列表直接点击）
-const addToCart = (book) => {
-  ElMessage.success(`已将《${book.title}》加入购物车`)
+const addToCart = async (book) => {
+  if (!book?.bid) {
+    ElMessage.warning('该商品暂不支持加入购物车')
+    return
+  }
+  try {
+    const res = await addToCartApi({
+      uid,
+      bid: book.bid,
+      number: 1
+    })
+    if (res.data && res.data.code === 200) {
+      ElMessage.success(`已将《${book.title}》加入购物车`)
+    } else {
+      ElMessage.error(res.data?.message || '加入购物车失败')
+    }
+  } catch (e) {
+    console.error('加入购物车失败:', e)
+    ElMessage.error('加入购物车失败，请稍后重试')
+  }
 }
 
 // 收藏 / 取消收藏
