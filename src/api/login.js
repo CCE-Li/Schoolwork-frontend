@@ -1,5 +1,12 @@
-import axios from "../axios";
+import request from '@/utils/request'
 
-function login(username, password) {
-  axios.post("/api/login", {
-})}
+export function login(username, password) {
+  return request({
+    url: '/auth/login',
+    method: 'post',
+    data: {
+      username,
+      password
+    }
+  })
+}

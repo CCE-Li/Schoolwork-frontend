@@ -95,7 +95,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElRadioGroup, ElRadioButton, ElDialog, ElButton } from 'element-plus'
-import axios from 'axios'
+import { login } from '@/api/login'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
@@ -148,25 +148,22 @@ const handleLogin = async () => {
 
   try {
     // 调用登录 API
-    const response = await axios.post('/api/auth/login', {
-      username: loginForm.username,
-      password: loginForm.password
-    })
+    const response = await login(loginForm.username, loginForm.password)
 
     // 根据响应码处理结果
     console.log('登录响应:', response.data) // 调试：查看完整响应
     if (response.data.code === 200) {
       // 登录成功，保存 token 到 localStorage
       // token 可能在 message 或 data.token 字段中
-      const token = response.data.message || response.data.data?.token
+      const token = response.data.data?.token || response.data.message
       console.log('保存的Token:', token) // 调试：查看token
-      localStorage.setItem('token', token)
+      localStorage.setItem('token', `Bearer ${token}`)
       localStorage.setItem('username', loginForm.username)
       localStorage.setItem('isLoggedIn', 'true')
 
       // 同步更新 Pinia 中的用户状态
       userStore.login({
-        token,
+        token: `Bearer ${token}`,
         username: loginForm.username,
         role: loginForm.userType === 'admin' ? 'admin' : 'user',
         userId: response.data.data?.userId || ''
@@ -655,4 +652,3 @@ label {
     width: 120px;
   }
 }
-</style>

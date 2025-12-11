@@ -25,7 +25,25 @@ app.get('/api/test-db', async (req, res) => {
 // 获取图书列表
 app.get('/api/books', async (req, res) => {
   try {
-    const [rows] = await pool.promise().query('SELECT * FROM books WHERE status = 1 LIMIT 20');
+    // 处理查询参数
+    const { keyword, tags } = req.query;
+    let sql = 'SELECT * FROM books WHERE status = 1';
+    const params = [];
+    
+    if (keyword) {
+      sql += ' AND (title LIKE ? OR author LIKE ? OR description LIKE ?)';
+      const searchKeyword = `%${keyword}%`;
+      params.push(searchKeyword, searchKeyword, searchKeyword);
+    }
+    
+    if (tags) {
+      sql += ' AND tags LIKE ?';
+      params.push(`%${tags}%`);
+    }
+    
+    sql += ' LIMIT 50';
+    
+    const [rows] = await pool.promise().query(sql, params);
     res.json({ code: 200, data: rows, message: '获取图书列表成功' });
   } catch (error) {
     console.error('获取图书列表失败:', error);
@@ -43,10 +61,76 @@ app.get('/api/books/:id', async (req, res) => {
       return res.status(404).json({ code: 404, message: '图书不存在' });
     }
     
-    res.json({ code: 200, data: rows[0], message: '获取图书详情成功' });
+    // 获取图书评论
+    const [reviews] = await pool.promise().query(
+      'SELECT r.*, u.username FROM reviews r JOIN users u ON r.uid = u.uid WHERE r.bid = ? ORDER BY r.review_time DESC', 
+      [id]
+    );
+    
+    const bookData = {
+      ...rows[0],
+      reviews: reviews
+    };
+    
+    res.json({ code: 200, data: bookData, message: '获取图书详情成功' });
   } catch (error) {
     console.error('获取图书详情失败:', error);
     res.status(500).json({ code: 500, message: '获取图书详情失败', error: error.message });
+  }
+});
+
+// 添加图书评论
+app.post('/api/books/:id/comments', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+    
+    // 简化处理，实际应该从token中获取用户ID
+    const uid = 1;
+    
+    // 插入评论
+    const [result] = await pool.promise().query(
+      'INSERT INTO reviews (uid, bid, rating, comment) VALUES (?, ?, ?, ?)', 
+      [uid, id, rating, comment]
+    );
+    
+    res.json({ code: 200, message: '评论添加成功' });
+  } catch (error) {
+    console.error('添加评论失败:', error);
+    res.status(500).json({ code: 500, message: '添加评论失败', error: error.message });
+  }
+});
+
+// 创建订单
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { bid, number, addressId } = req.body;
+    
+    // 简化处理，实际应该从token中获取用户ID
+    const uid = 1;
+    
+    // 获取图书信息
+    const [books] = await pool.promise().query('SELECT * FROM books WHERE bid = ?', [bid]);
+    if (books.length === 0) {
+      return res.status(404).json({ code: 404, message: '图书不存在' });
+    }
+    
+    const book = books[0];
+    const totalPrice = (book.price * number).toFixed(2);
+    
+    // 生成订单号
+    const oid = 'ORDER' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+    
+    // 插入订单
+    const [result] = await pool.promise().query(
+      'INSERT INTO orders (oid, uid, status, books, total_price) VALUES (?, ?, ?, ?, ?)', 
+      [oid, uid, 0, JSON.stringify([{bid, title: book.title, price: book.price, number}]), totalPrice]
+    );
+    
+    res.json({ code: 200, data: { oid }, message: '订单创建成功' });
+  } catch (error) {
+    console.error('创建订单失败:', error);
+    res.status(500).json({ code: 500, message: '创建订单失败', error: error.message });
   }
 });
 
@@ -150,6 +234,77 @@ app.get('/api/user/recommendations', async (req, res) => {
   } catch (error) {
     console.error('获取推荐图书失败:', error);
     res.status(500).json({ code: 500, message: '获取推荐图书失败', error: error.message });
+  }
+});
+
+// 获取购物车
+app.get('/api/cart', async (req, res) => {
+  try {
+    // 简化处理，实际应该从token中获取用户ID
+    const uid = 1;
+    
+    const [rows] = await pool.promise().query(
+      'SELECT c.*, b.title, b.price, b.cover_url FROM carts c JOIN books b ON c.bid = b.bid WHERE c.uid = ?', 
+      [uid]
+    );
+    
+    res.json({ code: 200, data: rows, message: '获取购物车成功' });
+  } catch (error) {
+    console.error('获取购物车失败:', error);
+    res.status(500).json({ code: 500, message: '获取购物车失败', error: error.message });
+  }
+});
+
+// 添加到购物车
+app.post('/api/cart', async (req, res) => {
+  try {
+    const { bid, number = 1 } = req.body;
+    
+    // 简化处理，实际应该从token中获取用户ID
+    const uid = 1;
+    
+    // 检查购物车中是否已有该商品
+    const [existing] = await pool.promise().query(
+      'SELECT * FROM carts WHERE uid = ? AND bid = ?', 
+      [uid, bid]
+    );
+    
+    if (existing.length > 0) {
+      // 更新数量
+      await pool.promise().query(
+        'UPDATE carts SET number = number + ? WHERE uid = ? AND bid = ?', 
+        [number, uid, bid]
+      );
+    } else {
+      // 添加新商品
+      await pool.promise().query(
+        'INSERT INTO carts (uid, bid, number) VALUES (?, ?, ?)', 
+        [uid, bid, number]
+      );
+    }
+    
+    res.json({ code: 200, message: '添加到购物车成功' });
+  } catch (error) {
+    console.error('添加到购物车失败:', error);
+    res.status(500).json({ code: 500, message: '添加到购物车失败', error: error.message });
+  }
+});
+
+// 获取用户订单
+app.get('/api/orders', async (req, res) => {
+  try {
+    // 简化处理，实际应该从token中获取用户ID
+    const uid = 1;
+    
+    const [rows] = await pool.promise().query(
+      'SELECT * FROM orders WHERE uid = ? ORDER BY create_time DESC', 
+      [uid]
+    );
+    
+    res.json({ code: 200, data: rows, message: '获取订单列表成功' });
+  } catch (error) {
+    console.error('获取订单列表失败:', error);
+    res.status(500).json({ code: 500, message: '获取订单列表失败', error: error.message });
   }
 });
 
